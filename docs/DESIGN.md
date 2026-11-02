@@ -58,7 +58,8 @@ ciphertext to Koofr (WebDAV), and runs Workers AI on already-masked text for the
 ```json
 {
   "schemaVersion": 1,
-  "profiles": [ { "id": "p1", "displayName": "Me", "birthYear": 1990, "sex": "M", "maskNames": ["FULL NAME AS ON IC"] } ],
+  "profiles": [ { "id": "p1", "displayName": "Me", "birthYear": 1990, "sex": "M", "maskNames": ["FULL NAME AS ON IC"],
+                  "updatedAt": "…", "deletedAt": null } ],
   "reports": [ {
     "id": "rpt-2025-05-10-a1", "profileId": "p1", "date": "2025-05-10", "provider": "Lab / clinic",
     "type": "Annual checkup", "fasting": true, "filePath": "files/rpt-2025-05-10-a1.pdf.enc",
@@ -69,13 +70,15 @@ ciphertext to Koofr (WebDAV), and runs Workers AI on already-masked text for the
     "createdAt": "…", "updatedAt": "…", "deletedAt": null } ],
   "markers": { "LDL": { "name": "LDL cholesterol", "group": "Lipids", "unitStd": "mmol/L",
                "aliases": ["LDL-C"], "toStd": { "mg/dL": 0.02586 } } },
-  "settings": { "aiMode": "paste", "gatewayUrl": "", "appToken": "", "autoLockMinutes": 5 },
+  "settings": { "aiMode": "paste", "gatewayUrl": "", "appToken": "", "autoLockMinutes": 5, "lastProfileId": "p1" },
   "updatedAt": "…"
 }
 ```
 - `flag`: L | N | H | null. `entryType`: ai | manual | edited. `source`: ai-paste | ai-workers | manual.
+- `value`: number, or text for results like "Negative", "Trace", "1+". Text results have `valueStd` null, appear in tables, and stay out of charts.
+- `marker`: catalogue code, or null when the printed name is unknown (then `unitStd` and `valueStd` are null too).
 - `vault.markers` holds user-added/overridden entries; built-ins are in `src/markers.js`.
-- Deletes are soft (`deletedAt`) so sync merges cleanly.
+- Deletes are soft (`deletedAt`) so sync merges cleanly. Deleting a person soft-deletes their reports and wipes the name fields.
 
 ## Screens
 Lock (keypad, recovery link) · header profile switcher · bottom tabs:

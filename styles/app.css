@@ -83,6 +83,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: 10px;
   border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; }
+.btn { color: var(--text); text-decoration: none; }
 .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: 0; color: #fff; font-weight: 600; }
 .btn:disabled { opacity: .5; cursor: default; }
 .btn-danger { border-color: #5b2330; color: var(--high); }
@@ -104,7 +105,32 @@ summary { cursor: pointer; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 th { color: var(--muted); font-weight: 500; font-size: 12px; }
+table.results td { white-space: normal; padding: 8px 6px; }
 td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.view-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.view-head h2 { margin: 0; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0 12px; align-items: end; }
+.field-check { margin-bottom: 12px; min-height: 44px; }
+.person-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+h4 { margin: 12px 0 2px; font-size: .9rem; }
+.report-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: inherit; text-decoration: none; margin-bottom: 8px; }
+.report-row.selected { border-color: var(--accent); }
+.split-list, .split-detail { min-width: 0; }
+.split.has-detail .split-list, .split:not(.has-detail) .split-detail { display: none; }
+.result-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.result-row label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); min-width: 0; }
+.result-row input, .result-row select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 15px; }
+.result-row label { grid-column: span 3; }
+.result-row .rr-name { grid-column: 1 / 6; }
+.rr-del { grid-column: 6; grid-row: 1; align-self: end; padding: 8px 4px; }
+.rr-hints { grid-column: 1 / -1; margin: 0; font-size: 12px; }
+.result-row.hint-unknown .rr-hints, .result-row.hint-low .rr-hints { color: var(--warn); }
+.result-row.hint-range:not(.hint-unknown):not(.hint-low) .rr-hints { color: var(--high); }
+.result-row.hint-unknown input[data-f="name"], .result-row.hint-low input[data-f="value"] { border-color: var(--warn); }
+.result-row.hint-range input[data-f="value"] { color: var(--high); }
+.modal { position: fixed; inset: 0; z-index: 50; display: flex; padding: 16px; overflow-y: auto; background: rgba(0, 0, 0, .6); }
+.modal-card { width: 100%; max-width: 480px; margin: auto; padding: 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
 .toast { position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 12px); transform: translateX(-50%);
   z-index: 200; max-width: 90vw; padding: 10px 16px; border-radius: 10px; background: var(--surface-2);
   border: 1px solid var(--border); opacity: 0; pointer-events: none; transition: opacity .2s; }
@@ -119,4 +145,9 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* laptop: list + detail side by side where a view supports it */
 @media (min-width: 900px) {
   .split { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+  .split.has-detail .split-list, .split:not(.has-detail) .split-detail { display: block; }
+  .only-phone { display: none; }
+  .result-row { grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr 44px; }
+  .result-row label, .result-row .rr-name { grid-column: auto; }
+  .rr-del { grid-column: 6; grid-row: 1; }
 }

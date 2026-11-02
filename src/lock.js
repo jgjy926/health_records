@@ -1,7 +1,7 @@
 // Lock screen: keypad, first-run passcode setup, recovery key, retry delays, auto-lock timers.
 import * as vault from './vault.js';
 import { state } from './state.js';
-import { esc, showToast } from './ui.js';
+import { esc, showToast, closeAllModals } from './ui.js';
 import { AUTO_LOCK_BACKGROUND_MS, AUTO_LOCK_IDLE_MS, PASSCODE_MIN_LENGTH } from './config.js';
 
 const PASSCODE_MAX_LENGTH = 12;
@@ -227,6 +227,7 @@ export function initLock(unlockedCallback) {
 
 export function showLock() {
   vault.lock();
+  closeAllModals();
   // The rendered views hold decrypted values too.
   document.querySelectorAll('.view').forEach(v => { v.innerHTML = ''; });
   $('profileSwitcher').innerHTML = '';

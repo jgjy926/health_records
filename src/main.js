@@ -3,7 +3,8 @@ import { APP_VERSION } from './config.js';
 import { state } from './state.js';
 import { initLock, showLock } from './lock.js';
 import { renderSwitcher } from './profiles.js';
-import { renderOverview, renderReports, renderAdd, renderTrends, renderSettings } from './views.js';
+import { renderOverview, renderAdd, renderTrends, renderSettings } from './views.js';
+import { renderReports } from './reports.js';
 
 const VIEWS = {
   overview: renderOverview, reports: renderReports, add: renderAdd, trends: renderTrends, settings: renderSettings,
@@ -11,11 +12,11 @@ const VIEWS = {
 
 function route() {
   if (!state.vault) return;
-  const name = (location.hash || '#overview').slice(1);
+  const [name, ...args] = (location.hash || '#overview').slice(1).split('/');
   state.view = VIEWS[name] ? name : 'overview';
   document.querySelectorAll('.view').forEach(v => { v.hidden = v.dataset.view !== state.view; });
   document.querySelectorAll('.tabbar a').forEach(a => a.classList.toggle('active', a.dataset.tab === state.view));
-  VIEWS[state.view](document.getElementById(`view-${state.view}`));
+  VIEWS[state.view](document.getElementById(`view-${state.view}`), args);
   window.scrollTo(0, 0);
 }
 

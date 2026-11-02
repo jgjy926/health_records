@@ -1,7 +1,9 @@
 // The five tab views. Each render(el) redraws its section from state.
 // Shell: empty states + layout only. Later phases fill each one (see docs/BUILD_PLAN.md).
 import { state, currentProfile, reportsForCurrent } from './state.js';
-import { esc, emptyState, fmtDate, showToast } from './ui.js';
+import { renderPeople } from './profiles.js';
+import { catalogue, MARKER_GROUPS } from './markers.js';
+import { esc, emptyState, fmtDate, showToast, openModal } from './ui.js';
 import * as vault from './vault.js';
 import { recoveryKeyHtml, wireRecoveryKey } from './lock.js';
 import { APP_VERSION, PASSCODE_MIN_LENGTH } from './config.js';
@@ -26,16 +28,6 @@ export function renderOverview(el) {
   el.innerHTML = `<h2>Overview</h2><p class="muted">Latest checkup ${esc(fmtDate(reports[0].date))}</p>`;
 }
 
-export function renderReports(el) {
-  const p = currentProfile();
-  if (!p) { el.innerHTML = needProfile(); return; }
-  const reports = reportsForCurrent();
-  // Phase 3: list (date, provider, flagged count) + detail with result table; manual add/edit.
-  el.innerHTML = `<h2>Reports</h2>` + (reports.length ? '' :
-    emptyState('No reports yet', 'Reports you add or enter by hand appear here, newest first.',
-      '<a class="btn btn-primary" href="#add">Add a report</a>'));
-}
-
 export function renderAdd(el) {
   const p = currentProfile();
   if (!p) { el.innerHTML = needProfile(); return; }
@@ -46,7 +38,8 @@ export function renderAdd(el) {
         <li>Pick the PDF (stays on this device)</li><li>Check the masked text</li>
         <li>Enrich with AI (copy/paste into Claude, or Workers AI)</li><li>Review every value</li><li>Save</li>
       </ol>
-      <p class="mt"><button class="btn btn-primary" type="button" disabled>Pick PDF (Phase 4)</button></p>
+      <p class="mt"><button class="btn btn-primary" type="button" disabled>Pick PDF (Phase 4)</button>
+        <a class="btn" href="#reports/new">Enter by hand</a></p>
     </div>`;
 }
 
@@ -58,11 +51,10 @@ export function renderTrends(el) {
 }
 
 export function renderSettings(el) {
-  const n = state.vault ? state.vault.profiles.length : 0;
   const minutes = state.vault.settings.autoLockMinutes;
-  // Phase 3/6: profiles CRUD, AI mode, gateway URL + token, export.
+  // Phase 4/6: AI mode, gateway URL + token, export.
   el.innerHTML = `<h2>Settings</h2>
-    <div class="card"><h3>People (${n}/5)</h3><p class="muted">Add, edit and remove profiles. (Phase 3)</p></div>
+    <div class="card" id="peopleCard"></div>
     <div class="card"><h3>Security</h3>
       <div class="field"><label for="autoLock">Lock after no activity</label>
         <select id="autoLock">${AUTO_LOCK_CHOICES.map(m =>
@@ -88,8 +80,49 @@ export function renderSettings(el) {
     <div class="card"><h3>AI</h3><p class="muted">Copy/paste into Claude (default) or Workers AI fallback. (Phase 4)</p></div>
     <div class="card"><h3>Sync</h3><p class="muted">health-gateway URL and app token. (Phase 6)</p></div>
     <div class="card"><h3>Backup</h3><p class="muted">Encrypted backup file and CSV export. (Phase 6)</p></div>
+    <div class="card" id="markerCard"></div>
     <p class="muted">Version ${esc(APP_VERSION)}</p>`;
+  renderPeople(el.querySelector('#peopleCard'));
   wireSecurity(el);
+  renderMarkerCard(el.querySelector('#markerCard'));
+}
+
+// ---------- marker catalogue: built-ins are read-only, your own live in vault.markers ----------
+function renderMarkerCard(el) {
+  const custom = state.vault.markers;
+  const all = catalogue(custom);
+  el.innerHTML = `<h3>Marker catalogue</h3>
+    <p class="muted">${Object.keys(all).length} markers, ${Object.keys(custom).length} of them yours. Add one when a report uses a test the app doesn't know.</p>
+    <details><summary>Show all</summary>${MARKER_GROUPS.map(g => {
+      const names = Object.entries(all).filter(([, m]) => m.group === g);
+      return names.length ? `<h4>${esc(g)}</h4><p class="muted">${names.map(([, m]) => `${esc(m.name)} (${esc(m.unitStd)})`).join(', ')}</p>` : '';
+    }).join('')}</details>
+    <p class="mt"><button type="button" class="btn" data-add-marker>Add a marker</button></p>`;
+  el.querySelector('[data-add-marker]').onclick = () => {
+    const modal = openModal(`<h3>Add a marker</h3><form data-marker-form>
+      <div class="field"><label for="mName">Name</label><input id="mName" required autocomplete="off"></div>
+      <div class="form-grid">
+        <div class="field"><label for="mGroup">Group</label><select id="mGroup">${MARKER_GROUPS.map(g => `<option ${g === 'Other' ? 'selected' : ''}>${esc(g)}</option>`).join('')}</select></div>
+        <div class="field"><label for="mUnit">Standard unit</label><input id="mUnit" required autocomplete="off"></div>
+      </div>
+      <div class="field"><label for="mAliases">Other names on reports (one per line)</label><textarea id="mAliases" rows="2"></textarea></div>
+      <p class="actions"><button type="submit" class="btn btn-primary">Save</button><button type="button" class="btn" data-cancel>Cancel</button></p></form>`);
+    const q = s => modal.el.querySelector(s);
+    q('[data-cancel]').onclick = modal.close;
+    q('[data-marker-form]').onsubmit = async e => {
+      e.preventDefault();
+      const name = q('#mName').value.trim();
+      const code = `C_${name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').slice(0, 30)}`;
+      state.vault.markers[code] = {
+        name, group: q('#mGroup').value, unitStd: q('#mUnit').value.trim(),
+        aliases: q('#mAliases').value.split('\n').map(x => x.trim()).filter(Boolean), toStd: {},
+      };
+      await vault.save();
+      modal.close();
+      renderMarkerCard(el);
+      showToast('Marker added');
+    };
+  };
 }
 
 function wireSecurity(el) {

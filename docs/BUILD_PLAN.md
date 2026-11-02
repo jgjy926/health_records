@@ -22,11 +22,11 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - Done when: storage shows only ciphertext; wrong passcode cannot open; tests pass.
 
 ## Phase 3 — Profiles, data model, manual entry
-- [ ] Settings > People: add/edit/delete up to 5 (displayName, birthYear, sex, maskNames); delete asks to confirm
-- [ ] Header switcher drives every view; remember last profile inside the vault
-- [ ] markers.js: complete catalogue (+ urine, more CBC), matchMarker(name), toStd(value, unit, code)
-- [ ] Reports list (date, provider, flagged count) + detail table; manual add/edit report and results; soft delete
-- [ ] tests/markers.test.mjs: alias matching, unit conversion, computeFlag
+- [x] Settings > People: add/edit/delete up to 5 (displayName, birthYear, sex, maskNames); delete asks to confirm
+- [x] Header switcher drives every view; remember last profile inside the vault
+- [x] markers.js: complete catalogue (+ urine, more CBC), matchMarker(name), toStd(value, unit, code)
+- [x] Reports list (date, provider, flagged count) + detail table; manual add/edit report and results; soft delete
+- [x] tests/markers.test.mjs: alias matching, unit conversion, computeFlag
 - Done when: a hand-entered report shows correct flags and survives lock/unlock.
 
 ## Phase 4 — PDF parse, masking, AI enrich, review

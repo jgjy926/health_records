@@ -20,6 +20,59 @@ export function emptyState(title, body, actionHtml = '') {
   return `<div class="card empty"><h3>${esc(title)}</h3><p>${esc(body)}</p>${actionHtml}</div>`;
 }
 
+// ---------- modals (Android's Back button closes the top one) ----------
+const modals = [];
+
+export function openModal(html) {
+  const wrap = document.createElement('div');
+  wrap.className = 'modal';
+  wrap.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(wrap);
+  const handle = {
+    el: wrap,
+    close: () => {
+      const i = modals.indexOf(handle);
+      if (i >= 0) modals.splice(i, 1);
+      wrap.remove();
+    },
+  };
+  modals.push(handle);
+  return handle;
+}
+
+// Returns true if a modal was closed.
+export function closeTopModal() {
+  const top = modals[modals.length - 1];
+  if (top) top.close();
+  return !!top;
+}
+
+export function closeAllModals() { while (closeTopModal()); }
+
+export function confirmDialog(message, { okLabel = 'OK', danger = false } = {}) {
+  return new Promise(resolve => {
+    const modal = openModal(`<p>${esc(message)}</p><p class="actions mt">
+        <button type="button" class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-yes>${esc(okLabel)}</button>
+        <button type="button" class="btn" data-no>Cancel</button></p>`);
+    const finish = yes => { modal.close(); resolve(yes); };
+    modal.el.querySelector('[data-yes]').onclick = () => finish(true);
+    modal.el.querySelector('[data-no]').onclick = () => finish(false);
+  });
+}
+
+// Hand decrypted bytes to the browser's viewer. The object URL lives only as long as it's needed.
+export async function openBytes(bytes, filename, mime) {
+  const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
 export function fmtDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);

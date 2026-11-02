@@ -10,4 +10,4 @@ npm run vendor       # copy them into ./vendor (commit the result)
 npm run serve        # http://localhost:8080
 npm test
 ```
-Status: **Phase 2 done.** Vault and lock are real; profiles and reports come in Phase 3.
+Status: **Phase 3 done.** People and hand-entered reports work; PDF import comes in Phase 4.
