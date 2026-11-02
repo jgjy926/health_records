@@ -23,12 +23,12 @@ ciphertext to Koofr (WebDAV), and runs Workers AI on already-masked text for the
 1. **Passcode** (6+ digits). PBKDF2-SHA256, 600,000 iterations, 16-byte random salt -> KEK.
    KEK wraps a random 256-bit AES-GCM **data key**. The data key encrypts the vault JSON and every PDF (fresh 12-byte IV each time).
 2. **Recovery key**: 24 random chars (Crockford base32, grouped `XXXX-XXXX-…`), shown once at setup. The data key is
-   also wrapped by a KEK derived from it. Recovery -> must set a new passcode.
+   also wrapped by a KEK derived from it. Recovery -> must set a new passcode. Settings can replace the key (needs the passcode).
 3. **Local storage**: localStorage holds only `{ v, salt, iterations, wrappedKeyPass, wrappedKeyRecovery, iv, ct }`.
    PDFs go to IndexedDB, encrypted. Decrypted data lives only in memory (`state.vault`).
 4. **App token** for the gateway is stored inside the encrypted vault, never in plain localStorage, never in the APK.
 5. **Auto-lock**: 1 min in background, 5 min idle (configurable). Lock clears `state.vault` and the data key.
-6. **Retry delay** after wrong passcodes: 0,0,0,1s,5s,30s,5min (persisted count).
+6. **Retry delay** after wrong passcodes: 0,0,0,1s,5s,30s,5min (count and end time persisted in `health_records.attempts`, no health data).
 7. **De-identification before AI**: mask IC (`\d{6}-?\d{2}-?\d{4}`), phones, emails, profile names + `maskNames`,
    address blocks, MRN/lab-number labels. User reviews masked text and can mask more.
 8. **Android**: FLAG_SECURE (no screenshots / recents preview), WebView debugging off in release.

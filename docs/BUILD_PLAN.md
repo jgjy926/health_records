@@ -12,13 +12,13 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - [x] enrich.js copied from cashback_sspn (still uses Tailwind classes — restyle in Phase 4)
 
 ## Phase 2 — Vault and lock
-- [ ] src/crypto.js per its contract (PBKDF2 600k, AES-GCM, key wrap, recovery key)
-- [ ] src/vault.js real implementation, same exports; remove DEV_STUB (set false) and the dev banner
-- [ ] Encrypted blob in localStorage; PDFs in IndexedDB (encrypted)
-- [ ] First run: set passcode -> confirm -> show recovery key (copy + "I've saved it" checkbox)
-- [ ] Unlock, retry delays (persisted), recovery-key unlock -> new passcode, change passcode in Settings
-- [ ] Auto-lock: visibilitychange/background 1 min, idle 5 min
-- [ ] tests/crypto.test.mjs (node --test, Node's webcrypto): round trip, wrong passcode fails, recovery works, IV unique
+- [x] src/crypto.js per its contract (PBKDF2 600k, AES-GCM, key wrap, recovery key)
+- [x] src/vault.js real implementation, same exports; remove DEV_STUB (set false) and the dev banner
+- [x] Encrypted blob in localStorage; PDFs in IndexedDB (encrypted)
+- [x] First run: set passcode -> confirm -> show recovery key (copy + "I've saved it" checkbox)
+- [x] Unlock, retry delays (persisted), recovery-key unlock -> new passcode, change passcode in Settings
+- [x] Auto-lock: visibilitychange/background 1 min, idle 5 min
+- [x] tests/crypto.test.mjs (node --test, Node's webcrypto): round trip, wrong passcode fails, recovery works, IV unique
 - Done when: storage shows only ciphertext; wrong passcode cannot open; tests pass.
 
 ## Phase 3 — Profiles, data model, manual entry

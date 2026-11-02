@@ -10,4 +10,4 @@ npm run vendor       # copy them into ./vendor (commit the result)
 npm run serve        # http://localhost:8080
 npm test
 ```
-Status: **Phase 1 shell.** The vault is a dev stub — do not enter real data until Phase 2 is done.
+Status: **Phase 2 done.** Vault and lock are real; profiles and reports come in Phase 3.

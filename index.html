@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./styles/app.css">
 </head>
 <body>
-  <!-- Lock screen: covers everything until the vault is unlocked (Phase 2) -->
+  <!-- Lock screen: covers everything until the vault is unlocked -->
   <section id="lockScreen" class="lock" aria-label="Locked">
     <div class="lock-card">
       <img src="./icons/icon.svg" alt="" class="lock-logo" width="56" height="56">
@@ -21,6 +21,7 @@
       <p id="lockHint" class="muted">Enter your passcode</p>
       <div id="lockDots" class="lock-dots" aria-hidden="true"></div>
       <div id="lockPad" class="keypad" role="group" aria-label="Passcode keypad"></div>
+      <div id="lockPanel" class="lock-panel" hidden></div>
       <p id="lockError" class="lock-error" role="alert"></p>
       <button id="lockRecover" class="link-btn" type="button">Forgot passcode? Use recovery key</button>
     </div>
