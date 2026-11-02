@@ -1,6 +1,6 @@
 // App-wide constants. Bump APP_VERSION on every change you ship (shown under the title;
 // also busts caches on GitHub Pages / the Android bundle).
-export const APP_VERSION = '2026.11.02-phase4';
+export const APP_VERSION = '2026.11.02-phase5';
 export const SCHEMA_VERSION = 1;
 export const MAX_PROFILES = 5;
 export const PASSCODE_MIN_LENGTH = 6;

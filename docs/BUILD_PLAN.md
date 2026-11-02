@@ -40,9 +40,9 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - Done when: one real de-identified PDF parses and every value is correct after review.
 
 ## Phase 5 — Overview and Trends
-- [ ] Overview: latest checkup, flagged markers, small sparkline per marker (vendored Chart.js or inline SVG)
-- [ ] Trends: marker/group picker, line chart over time on valueStd with shaded ref band, year-to-year table
-- [ ] CSV export of the current person's results
+- [x] Overview: latest checkup, flagged markers, small sparkline per marker (inline SVG)
+- [x] Trends: marker/group picker, line chart over time on valueStd with shaded ref band, year-to-year table
+- [x] CSV export of the current person's results
 - Done when: two reports of the same marker plot as a trend with the range band.
 
 ## Phase 6 — Gateway and encrypted sync

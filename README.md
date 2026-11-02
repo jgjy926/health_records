@@ -10,4 +10,4 @@ npm run vendor       # copy them into ./vendor (commit the result)
 npm run serve        # http://localhost:8080
 npm test
 ```
-Status: **Phase 4 done.** PDF import, masking, AI and review work; charts come in Phase 5.
+Status: **Phase 5 done.** Overview, trends and CSV work; sync comes in Phase 6.

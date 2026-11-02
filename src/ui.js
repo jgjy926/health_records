@@ -73,6 +73,18 @@ export async function openBytes(bytes, filename, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
+// Save bytes as a file. Only for things the user asked to export.
+export async function downloadFile(bytes, filename, mime) {
+  const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 export function fmtDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);

@@ -3,6 +3,7 @@
 import { state, currentProfile, reportsForCurrent } from './state.js';
 import { renderPeople } from './profiles.js';
 import { catalogue, MARKER_GROUPS } from './markers.js';
+import { flaggedCards, sparklineSvg, exportCsv } from './trends.js';
 import { esc, emptyState, fmtDate, showToast, openModal } from './ui.js';
 import * as vault from './vault.js';
 import { recoveryKeyHtml, wireRecoveryKey } from './lock.js';
@@ -24,15 +25,20 @@ export function renderOverview(el) {
       '<a class="btn btn-primary" href="#add">Add a report</a>');
     return;
   }
-  // Phase 5: latest checkup, flagged-marker cards with 4-point sparklines.
-  el.innerHTML = `<h2>Overview</h2><p class="muted">Latest checkup ${esc(fmtDate(reports[0].date))}</p>`;
-}
-
-export function renderTrends(el) {
-  const p = currentProfile();
-  if (!p) { el.innerHTML = needProfile(); return; }
-  // Phase 5: marker/group picker, line chart with shaded normal range (vendored Chart.js), year-to-year table.
-  el.innerHTML = `<h2>Trends</h2>` + emptyState('Nothing to chart yet', 'Trends appear once a marker has two or more results.');
+  const latest = reports[0];
+  const cards = flaggedCards(reports, state.vault.markers);
+  el.innerHTML = `<h2>Overview</h2>
+    <a class="card report-row" href="#reports/${esc(latest.id)}">
+      <span><span class="muted">Latest checkup</span><br><strong>${esc(fmtDate(latest.date))}</strong><br>
+        <span class="muted">${esc(latest.provider || latest.type || '')}</span></span>
+      <span class="badge ${cards.length ? 'flag-H' : 'flag-N'}">${cards.length ? `${cards.length} flagged` : 'All in range'}</span></a>
+    <h3 class="mt">${cards.length ? 'Outside the range' : 'Nothing outside the range'}</h3>
+    <div class="grid">${cards.map(c => `<a class="card flag-card" ${c.code ? `href="#trends/${esc(c.code)}"` : ''}>
+        <span class="flag-card-head"><strong>${esc(c.name)}</strong><span class="badge flag-${esc(c.flag)}">${c.flag === 'H' ? 'High' : 'Low'}</span></span>
+        <span>${esc(c.value)} <span class="muted">${esc(c.unit)}</span></span>
+        <span class="muted">Range ${esc(c.range) || 'not printed'}</span>
+        ${sparklineSvg(c.points, c.band)}</a>`).join('')}</div>
+    <p class="muted mt">This shows what the lab printed. It isn't medical advice, so talk to your doctor about anything flagged.</p>`;
 }
 
 export function renderSettings(el) {
@@ -75,12 +81,15 @@ export function renderSettings(el) {
       <div class="field"><label for="gwToken">App token (kept inside the encrypted vault)</label><input id="gwToken" type="password" autocomplete="off" value="${esc(settings.appToken)}"></div>
       <p class="actions" data-sync-actions><button type="button" class="btn" id="gwSave">Save</button></p>
       <p class="muted" id="gwStatus" role="status"></p></div>
-    <div class="card"><h3>Backup</h3><p class="muted">Encrypted backup file and CSV export. (Phase 6)</p></div>
+    <div class="card" id="backupCard"><h3>Backup</h3>
+      <p class="actions"><button type="button" class="btn" id="csvExport">Export this person's results (CSV)</button></p>
+      <p class="muted">The CSV is not encrypted.</p></div>
     <div class="card" id="markerCard"></div>
     <p class="muted">Version ${esc(APP_VERSION)}</p>`;
   renderPeople(el.querySelector('#peopleCard'));
   wireSecurity(el);
   renderMarkerCard(el.querySelector('#markerCard'));
+  el.querySelector('#csvExport').onclick = () => exportCsv();
   el.querySelector('#aiMode').onchange = async e => {
     settings.aiMode = e.target.value;
     await vault.save();
