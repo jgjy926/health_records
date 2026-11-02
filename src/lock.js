@@ -1,5 +1,6 @@
 // Lock screen: keypad, first-run passcode setup, recovery key, retry delays, auto-lock timers.
 import * as vault from './vault.js';
+import { joinFromGateway, joinFromBackup } from './sync.js';
 import { state } from './state.js';
 import { esc, showToast, closeAllModals } from './ui.js';
 import { AUTO_LOCK_BACKGROUND_MS, AUTO_LOCK_IDLE_MS, PASSCODE_MIN_LENGTH } from './config.js';
@@ -32,6 +33,7 @@ function setMode(next, error = '') {
   $('lockPad').hidden = !keypad;
   $('lockPanel').hidden = keypad;
   $('lockRecover').hidden = mode !== 'enter';
+  $('lockJoin').hidden = mode !== 'set' || afterRecovery;
   $('lockError').textContent = error;
   $('lockHint').textContent = {
     enter: 'Enter your passcode',
@@ -39,8 +41,9 @@ function setMode(next, error = '') {
     confirm: 'Enter the same passcode again',
     showKey: 'Save your recovery key',
     typeKey: 'Enter your recovery key',
+    join: 'Join your existing vault',
   }[mode];
-  if (mode !== 'showKey' && mode !== 'typeKey') $('lockPanel').innerHTML = '';
+  if (keypad) $('lockPanel').innerHTML = '';
   renderDots();
   startCountdown();
 }
@@ -90,6 +93,7 @@ async function submit() {
     await guarded(async () => {
       if (afterRecovery) {
         await vault.setPasscodeAfterRecovery(code);
+        await vault.save();
         open();
         showToast('New passcode set');
       } else {
@@ -205,6 +209,47 @@ function showRecoveryEntry() {
   $('recoveryInput').focus();
 }
 
+// New device: gateway + recovery key, or a backup file + recovery key. Then a passcode for this device.
+function showJoin() {
+  setMode('join');
+  const panel = $('lockPanel');
+  panel.innerHTML = `<form data-join-form>
+      <div class="field"><label for="joinKey">Recovery key</label>
+        <input id="joinKey" class="mono" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"></div>
+      <div class="field"><label for="joinUrl">Gateway URL</label><input id="joinUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="joinToken">App token</label><input id="joinToken" type="password" autocomplete="off"></div>
+      <p class="actions"><button type="submit" class="btn btn-primary">Join from sync</button>
+        <label class="btn" for="joinFile">Use a backup file</label>
+        <button type="button" class="btn" data-join-cancel>Back</button></p>
+      <input id="joinFile" class="sr-only" type="file">
+    </form>`;
+  const attempt = async fn => {
+    if (busy) return;
+    busy = true;
+    $('lockError').textContent = '';
+    $('lockHint').textContent = 'Checking…';
+    try {
+      await fn();
+      afterRecovery = true;
+      setMode('set');
+    } catch (err) {
+      $('lockHint').textContent = 'Join your existing vault';
+      $('lockError').textContent = err instanceof TypeError ? 'Could not reach the gateway.' : err.message;
+    } finally {
+      busy = false;
+    }
+  };
+  panel.querySelector('[data-join-cancel]').onclick = () => setMode('set');
+  panel.querySelector('form').onsubmit = e => {
+    e.preventDefault();
+    attempt(() => joinFromGateway($('joinUrl').value.trim().replace(/\/+$/, ''), $('joinToken').value.trim(), $('joinKey').value));
+  };
+  $('joinFile').onchange = e => {
+    const file = e.target.files[0];
+    if (file) attempt(async () => joinFromBackup(await file.text(), $('joinKey').value));
+  };
+}
+
 export function initLock(unlockedCallback) {
   onUnlocked = unlockedCallback;
   const pad = $('lockPad');
@@ -221,6 +266,7 @@ export function initLock(unlockedCallback) {
     e.preventDefault();   // otherwise Enter also clicks whichever keypad button has focus
   });
   $('lockRecover').addEventListener('click', showRecoveryEntry);
+  $('lockJoin').addEventListener('click', showJoin);
   setMode(vault.isSetUp() ? 'enter' : 'set');
   startAutoLock();
 }

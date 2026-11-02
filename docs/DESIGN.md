@@ -19,12 +19,18 @@ Web app (browser) and Android app (Capacitor WebView) run the same `index.html` 
 GitHub Pages serves the code. The device encrypts everything; `health-gateway` checks APP_TOKEN and proxies
 ciphertext to Koofr (WebDAV), and runs Workers AI on already-masked text for the fallback. Nothing readable leaves the device.
 
+## Sync decision (2026-11-02)
+The upload to Koofr and backup files leave out `wrappedKeyPass`. A 6-digit passcode could be guessed offline from a stolen copy, so a copy
+opens only through the recovery key (120 random bits). A new device joins with gateway URL + token + recovery key and sets its own passcode;
+passcode changes stay on each device. The Worker refuses a vault that contains `wrappedKeyPass`.
+
 ## Security
 1. **Passcode** (6+ digits). PBKDF2-SHA256, 600,000 iterations, 16-byte random salt -> KEK.
    KEK wraps a random 256-bit AES-GCM **data key**. The data key encrypts the vault JSON and every PDF (fresh 12-byte IV each time).
 2. **Recovery key**: 24 random chars (Crockford base32, grouped `XXXX-XXXX-…`), shown once at setup. The data key is
    also wrapped by a KEK derived from it. Recovery -> must set a new passcode. Settings can replace the key (needs the passcode).
-3. **Local storage**: localStorage holds only `{ v, salt, iterations, wrappedKeyPass, wrappedKeyRecovery, iv, ct }`.
+3. **Local storage**: the vault key holds only `{ v, salt, iterations, wrappedKeyPass, wrappedKeyRecovery, recoveryAt, iv, ct }`
+   (`recoveryAt` lets the newest recovery key win across devices). `health_records.sync` holds `{ etag, dirty, lastAt }`.
    PDFs go to IndexedDB, encrypted. Decrypted data lives only in memory (`state.vault`).
 4. **App token** for the gateway is stored inside the encrypted vault, never in plain localStorage, never in the APK.
 5. **Auto-lock**: 1 min in background, 5 min idle (configurable). Lock clears `state.vault` and the data key.

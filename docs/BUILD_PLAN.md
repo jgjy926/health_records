@@ -46,11 +46,12 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - Done when: two reports of the same marker plot as a trend with the range band.
 
 ## Phase 6 — Gateway and encrypted sync
-- [ ] worker.js: GET/PUT /vault (ETag, If-Match, daily backup), GET/PUT /file/:id — port Koofr code from cashback_sspn
-- [ ] sync.js: push/pull ciphertext, conflict merge per report id by updatedAt, sync pill states
-- [ ] Settings > Sync: gateway URL + token (stored in vault), "Test connection" (GET /ping)
-- [ ] Encrypted backup file download/restore
-- [ ] README deploy steps verified
+- [x] worker.js: GET/PUT /vault (ETag, If-Match, daily backup), GET/PUT /file/:id — port Koofr code from cashback_sspn
+- [x] sync.js: push/pull ciphertext, conflict merge per report id by updatedAt, sync pill states
+- [x] Settings > Sync: gateway URL + token (stored in vault), "Test connection" (GET /ping)
+- [x] Encrypted backup file download/restore
+- [x] README deploy steps written
+- [ ] README deploy steps verified on a real deploy (needs your OK to deploy)
 - Done when: Koofr holds only .enc files; laptop and phone show the same data.
 
 ## Phase 7 — Android

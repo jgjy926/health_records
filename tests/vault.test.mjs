@@ -49,7 +49,7 @@ test('storage holds only the documented fields and no plaintext', async () => {
   assert.deepEqual([...store.keys()], [vault.VAULT_KEY]);
   const raw = store.get(vault.VAULT_KEY);
   assert.deepEqual(Object.keys(JSON.parse(raw)).sort(),
-    ['ct', 'iterations', 'iv', 'salt', 'v', 'wrappedKeyPass', 'wrappedKeyRecovery']);
+    ['ct', 'iterations', 'iv', 'recoveryAt', 'salt', 'v', 'wrappedKeyPass', 'wrappedKeyRecovery']);
   assert.ok(!raw.includes(SECRET));
   assert.ok(!raw.includes('reports'));
   assert.equal(JSON.parse(raw).iterations, 600000);

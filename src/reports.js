@@ -2,6 +2,7 @@
 import { state, currentProfile, reportsForCurrent } from './state.js';
 import { esc, emptyState, fmtDate, showToast, confirmDialog, openBytes } from './ui.js';
 import * as vault from './vault.js';
+import { fetchFile } from './sync.js';
 import { catalogue, computeFlag, normalizeResult, parseRange, parseValue } from './markers.js';
 
 export const REPORT_TYPES = ['Annual checkup', 'Blood test', 'Urine test', 'Follow-up', 'Other'];
@@ -185,9 +186,10 @@ function wireDetail(el, report) {
   if (open) {
     open.onclick = async () => {
       try {
-        const bytes = await vault.loadPdf(report.filePath);
+        let bytes = await vault.loadPdf(report.filePath);
+        if (!bytes && await fetchFile(report.filePath)) bytes = await vault.loadPdf(report.filePath);
         if (bytes) await openBytes(bytes, `${report.id}.pdf`, 'application/pdf');
-        else showToast('The PDF is not on this device yet. Sync first.');
+        else showToast('This PDF is not on this device or the gateway.');
       } catch (e) { showToast(e.message); }
     };
   }

@@ -24,6 +24,7 @@
       <div id="lockPanel" class="lock-panel" hidden></div>
       <p id="lockError" class="lock-error" role="alert"></p>
       <button id="lockRecover" class="link-btn" type="button">Forgot passcode? Use recovery key</button>
+      <button id="lockJoin" class="link-btn" type="button" hidden>Already use this on another device? Join it</button>
     </div>
   </section>
 
@@ -39,7 +40,7 @@
       <div class="topbar-actions">
         <label class="sr-only" for="profileSwitcher">Person</label>
         <select id="profileSwitcher" class="profile-switcher" title="Switch person (up to 5)"></select>
-        <span id="syncStatus" class="sync-pill" title="Sync status">Not synced</span>
+        <button id="syncStatus" class="sync-pill" type="button" title="Sync status">Not synced</button>
         <button id="lockNow" class="icon-btn" type="button" title="Lock now" aria-label="Lock now">&#128274;</button>
       </div>
     </header>

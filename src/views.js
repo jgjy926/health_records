@@ -1,10 +1,11 @@
 // The five tab views. Each render(el) redraws its section from state.
 // Shell: empty states + layout only. Later phases fill each one (see docs/BUILD_PLAN.md).
 import { state, currentProfile, reportsForCurrent } from './state.js';
-import { renderPeople } from './profiles.js';
+import { renderPeople, renderSwitcher } from './profiles.js';
 import { catalogue, MARKER_GROUPS } from './markers.js';
 import { flaggedCards, sparklineSvg, exportCsv } from './trends.js';
-import { esc, emptyState, fmtDate, showToast, openModal } from './ui.js';
+import { testConnection, syncNow, syncStatus, buildBackup, restoreIntoOpenVault } from './sync.js';
+import { esc, emptyState, fmtDate, showToast, openModal, downloadFile } from './ui.js';
 import * as vault from './vault.js';
 import { recoveryKeyHtml, wireRecoveryKey } from './lock.js';
 import { APP_VERSION, PASSCODE_MIN_LENGTH } from './config.js';
@@ -44,7 +45,6 @@ export function renderOverview(el) {
 export function renderSettings(el) {
   const settings = state.vault.settings;
   const minutes = settings.autoLockMinutes;
-  // Phase 6: test connection, sync, export.
   el.innerHTML = `<h2>Settings</h2>
     <div class="card" id="peopleCard"></div>
     <div class="card"><h3>Security</h3>
@@ -79,11 +79,16 @@ export function renderSettings(el) {
     <div class="card" id="syncCard"><h3>Sync</h3>
       <div class="field"><label for="gwUrl">Gateway URL</label><input id="gwUrl" type="url" inputmode="url" placeholder="https://health-gateway.you.workers.dev" autocomplete="off" spellcheck="false" value="${esc(settings.gatewayUrl)}"></div>
       <div class="field"><label for="gwToken">App token (kept inside the encrypted vault)</label><input id="gwToken" type="password" autocomplete="off" value="${esc(settings.appToken)}"></div>
-      <p class="actions" data-sync-actions><button type="button" class="btn" id="gwSave">Save</button></p>
+      <p class="actions"><button type="button" class="btn btn-primary" id="gwSave">Save</button>
+        <button type="button" class="btn" id="gwTest">Test connection</button>
+        <button type="button" class="btn" id="gwSync">Sync now</button></p>
       <p class="muted" id="gwStatus" role="status"></p></div>
     <div class="card" id="backupCard"><h3>Backup</h3>
-      <p class="actions"><button type="button" class="btn" id="csvExport">Export this person's results (CSV)</button></p>
-      <p class="muted">The CSV is not encrypted.</p></div>
+      <p class="actions"><button type="button" class="btn" id="backupSave">Download encrypted backup</button>
+        <label class="btn" for="backupFile">Restore from a backup</label>
+        <button type="button" class="btn" id="csvExport">Export this person's results (CSV)</button></p>
+      <input id="backupFile" class="sr-only" type="file">
+      <p class="muted">A backup opens only with your recovery key or on this vault. The CSV is not encrypted.</p></div>
     <div class="card" id="markerCard"></div>
     <p class="muted">Version ${esc(APP_VERSION)}</p>`;
   renderPeople(el.querySelector('#peopleCard'));
@@ -95,11 +100,46 @@ export function renderSettings(el) {
     await vault.save();
     showToast('Saved');
   };
+  const gwStatus = el.querySelector('#gwStatus');
+  const readGateway = () => ({
+    gatewayUrl: el.querySelector('#gwUrl').value.trim().replace(/\/+$/, ''),
+    appToken: el.querySelector('#gwToken').value.trim(),
+  });
   el.querySelector('#gwSave').onclick = async () => {
-    settings.gatewayUrl = el.querySelector('#gwUrl').value.trim().replace(/\/+$/, '');
-    settings.appToken = el.querySelector('#gwToken').value.trim();
+    Object.assign(settings, readGateway());
     await vault.save();
     showToast('Saved');
+  };
+  el.querySelector('#gwTest').onclick = async () => {
+    gwStatus.textContent = 'Testing…';
+    try {
+      await testConnection(readGateway());
+      gwStatus.textContent = 'Connected.';
+    } catch (err) { gwStatus.textContent = err.message; }
+  };
+  el.querySelector('#gwSync').onclick = async () => {
+    Object.assign(settings, readGateway());
+    await vault.save();
+    gwStatus.textContent = 'Syncing…';
+    await syncNow();
+    const now = syncStatus();
+    gwStatus.textContent = now.state === 'off' ? 'Enter the gateway URL and token first.' : now.state === 'synced' ? 'Synced.' : now.detail;
+  };
+  el.querySelector('#backupSave').onclick = async () => {
+    await vault.save();
+    await downloadFile(await buildBackup(), `health-records-${new Date().toISOString().slice(0, 10)}.vault`, 'application/octet-stream');
+    showToast('Backup saved');
+  };
+  el.querySelector('#backupFile').onchange = async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      await restoreIntoOpenVault(await file.text());
+      showToast('Backup restored');
+      renderSwitcher();
+      renderSettings(el);
+    } catch (err) { showToast(err.message); }
   };
 }
 

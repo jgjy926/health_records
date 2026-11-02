@@ -63,7 +63,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .topbar-actions { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .profile-switcher { max-width: 170px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
   background: var(--surface); }
-.sync-pill { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.sync-pill { font-size: 11px; padding: 4px 8px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; cursor: pointer; }
+.sync-pill[data-state="synced"] { color: var(--normal); }
+.sync-pill[data-state="pending"], .sync-pill[data-state="syncing"], .sync-pill[data-state="offline"] { color: var(--warn); }
+.sync-pill[data-state="error"] { color: var(--high); }
 .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; }
 .main { max-width: 1100px; margin: 0 auto; padding: 16px; }
 
