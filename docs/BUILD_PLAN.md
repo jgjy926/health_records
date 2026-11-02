@@ -63,5 +63,5 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - [x] Build debug APK with Gradle; install on the emulator; check lock on background
 - [x] Launcher icon and splash: Med.Record (`mobile/scripts/make-icons.py`)
 - [ ] Install on a real phone; check WebView debugging is off in chrome://inspect (the emulator's OS keeps it on)
-- [ ] Release signing with your own keystore
+- [x] Release signing with your own keystore (kept outside the repo; `Health-Records.apk` built 2026-11-02)
 - Done when: APK installs, locks on background, and the user can backfill 3–4 years of reports.
