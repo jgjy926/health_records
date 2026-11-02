@@ -51,7 +51,8 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - [x] Settings > Sync: gateway URL + token (stored in vault), "Test connection" (GET /ping)
 - [x] Encrypted backup file download/restore
 - [x] README deploy steps written
-- [ ] README deploy steps verified on a real deploy (needs your OK to deploy)
+- [x] README deploy steps verified: gateway deployed 2026-11-02, the web app synced to real Koofr
+- [ ] Sync checked on a phone, and Workers AI called for real
 - Done when: Koofr holds only .enc files; laptop and phone show the same data.
 
 ## Phase 7 — Android

@@ -10,7 +10,7 @@ npm run vendor       # copy them into ./vendor (commit the result)
 npm run serve        # http://localhost:8080
 npm test
 ```
-Status: **Phase 7 done** (gateway not yet deployed).
+Status: **Phase 7 done.** Live at https://jgjy926.github.io/health_records/ with the gateway deployed.
 
 ## Deploy the gateway (free tier)
 1. Koofr: create an app password (Account > Preferences > Password > App passwords). The Worker makes the `/health_records` folder itself.
