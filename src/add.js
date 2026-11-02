@@ -10,6 +10,7 @@ import { buildPrompt, buildAttachPrompt, enrichWithWorkers, openEnrichPanel } fr
 import { normalizeResult } from './markers.js';
 import {
   newReportId, saveReport, reportFieldsHtml, readReportFields, resultsEditorHtml, wireResultsEditor, readResults,
+  duplicateRows, findDuplicateReport, duplicateMessage,
 } from './reports.js';
 
 const MAX_PDF_BYTES = 8 * 1024 * 1024;     // the gateway's limit per file
@@ -237,10 +238,14 @@ function renderEnrich(el) {
 
 function renderReview(el) {
   const a = state.add;
-  const needsLook = a.results.filter(r => !r.marker || (typeof r.confidence === 'number' && r.confidence < 0.8)).length;
+  const repeats = duplicateRows(a.results);
+  const needsLook = a.results.filter((r, i) => !r.marker || repeats.has(i) || (typeof r.confidence === 'number' && r.confidence < 0.8)).length;
+  const findDup = (date, results) => findDuplicateReport({ date, results }, state.vault.reports, a.profileId);
+  const dupText = dup => (dup ? duplicateMessage(dup) : '');
   el.innerHTML = `<h2>Review every value</h2>
     <form class="card" id="reviewForm">
       <p class="muted">Compare with the ${a.bytes ? 'PDF' : 'report'}. Nothing is saved until you confirm.${needsLook ? ` <strong class="warn-text">${needsLook} row(s) need a closer look.</strong>` : ''}</p>
+      <p class="warn-text" data-dup role="status">${esc(dupText(findDup(a.report.date, a.results)))}</p>
       ${reportFieldsHtml(a.report)}
       <h3 class="mt">Results (${a.results.length})</h3>
       ${resultsEditorHtml(a.results)}
@@ -249,6 +254,9 @@ function renderReview(el) {
         <button type="button" class="btn" data-cancel>Cancel</button></p>
     </form>`;
   wireResultsEditor(el);
+  el.querySelector('#rDate').addEventListener('change', e => {
+    el.querySelector('[data-dup]').textContent = dupText(findDup(e.target.value, readResults(el)));
+  });
   el.querySelector('[data-cancel]').onclick = async () => {
     if (await confirmDialog('Throw away this report?', { okLabel: 'Throw away', danger: true })) cancelFlow();
   };
@@ -260,6 +268,8 @@ function renderReview(el) {
       : !results.length ? 'Add at least one result with a marker and a value.' : '';
     el.querySelector('#reviewError').textContent = error;
     if (error) return;
+    const dup = findDup(fields.date, results);
+    if (dup && !await confirmDialog(`${duplicateMessage(dup)} Save this one anyway?`, { okLabel: 'Save anyway' })) return;
     const id = newReportId(fields.date);
     // Paste AI reply has no PDF, so the report has no file.
     const filePath = a.bytes ? `files/${id}.pdf.enc` : null;

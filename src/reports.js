@@ -53,6 +53,47 @@ export async function deleteReport(id) {
   if (report.filePath) { try { await vault.deletePdf(report.filePath); } catch { /* the tombstone is what counts */ } }
 }
 
+// ---------- duplicates ----------
+
+const rowKey = r => r.marker || String(r.nameAsPrinted || '').trim().toLowerCase();
+
+// Indexes of rows repeating a test already listed above them (a report can print a test on two pages).
+export function duplicateRows(results) {
+  const seen = new Set();
+  const dups = new Set();
+  results.forEach((r, i) => {
+    const key = rowKey(r);
+    if (key && seen.has(key)) dups.add(i);
+    seen.add(key);
+  });
+  return dups;
+}
+
+// The saved report this one most looks like, or null: the same person and date with mostly the same tests
+// (two reports on one day with different tests are fine), or mostly the same values on another date (a misread date).
+export function findDuplicateReport({ date, results }, reports, profileId) {
+  const fresh = new Map(results.map(r => [rowKey(r), r]));
+  fresh.delete('');
+  let best = null;
+  for (const report of reports) {
+    if (report.profileId !== profileId || report.deletedAt) continue;
+    const saved = new Map((report.results || []).map(r => [rowKey(r), r]));
+    const total = Math.min(fresh.size, saved.size);
+    if (!total) continue;
+    const shared = [...fresh.keys()].filter(k => saved.has(k));
+    const sameValues = shared.filter(k => String(fresh.get(k).value) === String(saved.get(k).value)).length;
+    const sameDate = report.date === date;
+    if (!(sameDate ? shared.length / total >= 0.5 : total >= 5 && sameValues / total >= 0.9)) continue;
+    if (!best || sameDate > best.sameDate || (sameDate === best.sameDate && sameValues > best.sameValues)) best = { report, sameDate, sameValues, total };
+  }
+  return best;
+}
+
+export function duplicateMessage({ report, sameDate, sameValues, total }) {
+  const label = `${fmtDate(report.date)}${report.provider ? ` (${report.provider})` : ''}`;
+  return `${sameDate ? 'You already have a report from' : 'These results match the report from'} ${label}: ${sameValues} of ${total} results are the same.`;
+}
+
 // ---------- editable results table ----------
 
 export function rangeText(r) {
@@ -63,18 +104,19 @@ export function rangeText(r) {
   return '';
 }
 
-function rowHints(r) {
+function rowHints(r, repeated) {
   const hints = [];
+  if (repeated) hints.push(['hint-dup', 'Same test as a row above']);
   if (!r.marker && r.nameAsPrinted) hints.push(['hint-unknown', 'Unknown marker']);
   if (typeof r.confidence === 'number' && r.confidence < LOW_CONFIDENCE) hints.push(['hint-low', `Low confidence (${Math.round(r.confidence * 100)}%)`]);
   if (r.flag === 'L' || r.flag === 'H') hints.push(['hint-range', r.flag === 'H' ? 'Above range' : 'Below range']);
   return hints;
 }
 
-function resultRowHtml(r = {}) {
+function resultRowHtml(r = {}, repeated = false) {
   const auto = computeFlag(r.value, r.refLow ?? null, r.refHigh ?? null);
   const flag = r.flag && r.flag !== auto ? r.flag : '';
-  const hints = rowHints(r);
+  const hints = rowHints(r, repeated);
   return `<div class="result-row ${hints.map(h => h[0]).join(' ')}" data-row data-orig="${esc(JSON.stringify(r))}">
     <label class="rr-name"><span>Marker <span class="zh" data-zh>${esc(zhName(r.marker))}</span></span><input data-f="name" list="markerList" value="${esc(r.nameAsPrinted ?? '')}" placeholder="e.g. LDL Cholesterol" autocomplete="off"></label>
     <label><span>Value</span><input data-f="value" value="${esc(r.value ?? '')}" inputmode="decimal" autocomplete="off"></label>
@@ -90,8 +132,9 @@ function resultRowHtml(r = {}) {
 
 export function resultsEditorHtml(results) {
   const options = Object.entries(catalogue(state.vault.markers)).map(([code, m]) => `<option value="${esc(m.name)}" label="${esc(zhName(code))}"></option>`).join('');
+  const repeats = duplicateRows(results);
   return `<datalist id="markerList">${options}</datalist>
-    <div data-rows>${results.map(resultRowHtml).join('')}</div>
+    <div data-rows>${results.map((r, i) => resultRowHtml(r, repeats.has(i))).join('')}</div>
     <p class="mt"><button type="button" class="btn" data-add-row>Add a result</button></p>`;
 }
 
@@ -172,7 +215,7 @@ function detailHtml(r) {
       <p class="only-phone"><a href="#reports">&larr; All reports</a></p>
       <h3>${esc(fmtDate(r.date))}</h3>
       <p class="muted">${[r.provider, r.type, r.fasting ? 'Fasting' : ''].filter(Boolean).map(esc).join(' · ')}</p>
-      ${r.notes ? `<p>${esc(r.notes)}</p>` : ''}
+      ${r.notes ? `<p class="report-notes">${esc(r.notes)}</p>` : ''}
       <div class="table-wrap"><table class="results"><thead><tr><th>Marker</th><th>Value</th><th>Flag</th><th>Range</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
       <p class="actions mt">
@@ -211,7 +254,7 @@ export function reportFieldsHtml(r = {}) {
         `<option ${t === (r.type || REPORT_TYPES[0]) ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
       <label class="check field-check"><input id="rFasting" type="checkbox" ${r.fasting ? 'checked' : ''}> Fasting</label>
     </div>
-    <div class="field"><label for="rNotes">Notes</label><textarea id="rNotes" rows="2">${esc(r.notes || '')}</textarea></div>`;
+    <div class="field"><label for="rNotes">Notes</label><textarea id="rNotes" rows="${r.notes ? 6 : 2}">${esc(r.notes || '')}</textarea></div>`;
 }
 
 export function readReportFields(root) {
@@ -244,6 +287,8 @@ function renderForm(el, report) {
       : !results2.length ? 'Add at least one result with a marker and a value.' : '';
     el.querySelector('#reportError').textContent = error;
     if (error) return;
+    const dup = report ? null : findDuplicateReport({ date: fields.date, results: results2 }, state.vault.reports, currentProfile().id);
+    if (dup && !await confirmDialog(`${duplicateMessage(dup)} Save this one anyway?`, { okLabel: 'Save anyway' })) return;
     const saved = await saveReport({ ...fields, id: report ? report.id : null, profileId: report ? report.profileId : currentProfile().id }, results2);
     showToast('Report saved');
     location.hash = `#reports/${saved.id}`;

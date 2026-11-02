@@ -14,7 +14,7 @@ Object.defineProperty(globalThis, 'localStorage', {
 const vault = await import('../src/vault.js');
 const { state, currentProfile, reportsForCurrent, liveProfiles } = await import('../src/state.js');
 const { saveProfile, deleteProfile, switchProfile, profileError } = await import('../src/profiles.js');
-const { saveReport, deleteReport, flaggedCount, newReportId } = await import('../src/reports.js');
+const { saveReport, deleteReport, flaggedCount, newReportId, duplicateRows, findDuplicateReport, duplicateMessage } = await import('../src/reports.js');
 const { normalizeResult } = await import('../src/markers.js');
 
 const person = name => ({ displayName: name, birthYear: 1990, sex: 'M', maskNames: [] });
@@ -106,4 +106,42 @@ test('person delete soft-deletes their reports and wipes the name', async () => 
 test('report ids are unique for the same date', () => {
   const ids = new Set(Array.from({ length: 100 }, () => newReportId('2026-01-01')));
   assert.equal(ids.size, 100);
+});
+
+const rows = pairs => pairs.map(([nameAsPrinted, value]) => normalizeResult({ nameAsPrinted, value, unit: 'x' }));
+const FIVE = [['LDL', 3.4], ['HDL', 1.2], ['ALT', 30], ['AST', 25], ['Creatinine', 80]];
+const saved = (over = {}) => ({ id: 'r1', profileId: 'p', date: '2026-01-01', provider: 'Lab', results: rows(FIVE), deletedAt: null, ...over });
+
+test('the same date and tests is a duplicate, even with a misread value', () => {
+  const fresh = rows([['LDL-C', 9.9], ...FIVE.slice(1)]);
+  const dup = findDuplicateReport({ date: '2026-01-01', results: fresh }, [saved()], 'p');
+  assert.equal(dup.report.id, 'r1');
+  assert.deepEqual([dup.sameDate, dup.sameValues, dup.total], [true, 4, 5]);
+  assert.match(duplicateMessage(dup), /already have a report from .*\(Lab\): 4 of 5/);
+});
+
+test('same values on another date are a duplicate, a few matching values are not', () => {
+  assert.equal(findDuplicateReport({ date: '2026-02-01', results: rows(FIVE) }, [saved()], 'p').sameDate, false);
+  assert.equal(findDuplicateReport({ date: '2026-02-01', results: rows(FIVE.slice(0, 2)) }, [saved()], 'p'), null);
+  const moved = rows(FIVE.map(([n, v]) => [n, v + 1]));
+  assert.equal(findDuplicateReport({ date: '2026-02-01', results: moved }, [saved()], 'p'), null);
+});
+
+test('not duplicates: different tests that day, another person, a deleted report', () => {
+  const urine = rows([['Urine Protein', 'Negative'], ['Urine Glucose', 'Negative']]);
+  assert.equal(findDuplicateReport({ date: '2026-01-01', results: urine }, [saved()], 'p'), null);
+  assert.equal(findDuplicateReport({ date: '2026-01-01', results: rows(FIVE) }, [saved()], 'other'), null);
+  assert.equal(findDuplicateReport({ date: '2026-01-01', results: rows(FIVE) }, [saved({ deletedAt: 'x' })], 'p'), null);
+});
+
+test('the closest report wins: same date first, then most equal values', () => {
+  const other = saved({ id: 'r2', date: '2025-01-01' });
+  const near = saved({ id: 'r3', results: rows(FIVE.map(([n, v]) => [n, v + 1])) });
+  assert.equal(findDuplicateReport({ date: '2026-01-01', results: rows(FIVE) }, [other, near], 'p').report.id, 'r3');
+});
+
+test('a test repeated within one report is spotted, blank rows are not', () => {
+  const r = rows([['LDL', 3.4], ['HDL', 1.2], ['LDL-C', 3.4], ['Vitamin Z', 1], ['vitamin z', 2]]);
+  assert.deepEqual([...duplicateRows(r)], [2, 4]);
+  assert.equal(duplicateRows([{}, {}]).size, 0);
 });

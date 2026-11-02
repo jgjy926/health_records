@@ -22,7 +22,7 @@ test('forgiving parse: fences, prose, stray quotes, trailing commas', () => {
 
 test('a lab reply comes through with its fields and entryType ai', () => {
   const { report, results } = parseLabReply('```json\n' + JSON.stringify(REPLY) + '\n```');
-  assert.deepEqual(report, { date: '2026-03-15', provider: 'Lab', type: 'Annual checkup', fasting: true });
+  assert.deepEqual(report, { date: '2026-03-15', provider: 'Lab', type: 'Annual checkup', fasting: true, notes: '' });
   assert.equal(results[0].nameAsPrinted, 'LDL-C');
   assert.equal(results[0].refHigh, 3);
   assert.equal(results[0].entryType, 'ai');
@@ -91,4 +91,22 @@ test('attach prompt asks Claude to drop identifiers and keeps the schema', () =>
   assert.match(p, /"nameAsPrinted"/);
   assert.match(p, /single ```json code block/);
   assert.doesNotMatch(p, /\[MASKED\]|<<<REPORT/);
+});
+
+test('doctor and lab comments land in notes, labelled and capped', () => {
+  const clean = extra => cleanLabReply({ ...REPLY, report: { ...REPLY.report, ...extra } }).report.notes;
+  assert.equal(clean({ doctorComment: ' Repeat in 3 months. ', labComment: 'Sample haemolysed.' }),
+    "Doctor's comment: Repeat in 3 months.\n\nLab comment: Sample haemolysed.");
+  assert.equal(clean({ labComment: 'Sample haemolysed.', doctorComment: '' }), 'Lab comment: Sample haemolysed.');
+  assert.equal(clean({ doctorComment: { evil: 1 }, notes: 'ignored' }), '');
+  assert.ok(clean({ doctorComment: 'x'.repeat(5000) }).length < 2100);
+});
+
+test('both prompts ask for the comments, word for word and without names', () => {
+  for (const p of [buildPrompt('x'), buildAttachPrompt()]) {
+    assert.match(p, /"doctorComment"/);
+    assert.match(p, /"labComment"/);
+    assert.match(p, /word for word/);
+    assert.match(p, /including the doctor's/);
+  }
 });

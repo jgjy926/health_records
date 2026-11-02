@@ -29,7 +29,9 @@ Add one entry to "results" for every test result, including urine tests and body
 "unit", "refLow", "refHigh" and "refText" are exactly as printed; use null or "" when the report has none.
 "flag" is L, N or H only if the report itself marks it, otherwise null.
 "confidence" is 0 to 1: how sure you are this row was read correctly.
-"report.date" is the sample or report date as YYYY-MM-DD, never a date of birth; "" if unclear.`;
+"report.date" is the sample or report date as YYYY-MM-DD, never a date of birth; "" if unclear.
+"report.doctorComment" is everything the doctor wrote about this person; "report.labComment" is what the lab or pathologist wrote about these results, not standard footers or disclaimers.
+Copy both word for word, without any person's name; "" when there are none.`;
 
 const AI_SCHEMA = {
   type: 'object',
@@ -38,6 +40,7 @@ const AI_SCHEMA = {
       type: 'object',
       properties: {
         date: { type: 'string' }, provider: { type: 'string' }, type: { type: 'string' }, fasting: { type: ['boolean', 'null'] },
+        doctorComment: { type: 'string' }, labComment: { type: 'string' },
       },
     },
     results: {

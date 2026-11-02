@@ -59,7 +59,9 @@ passcode changes stay on each device. The Worker refuses a vault that contains `
    paste reply -> forgiving parse; or (b) POST masked text to gateway `/ai-extract` (Workers AI, JSON schema output).
    (c) Paste AI reply, for a PDF over 8 MB or one already read in Claude: skips steps 1-3, the user attaches the report to Claude outside the app and pastes the reply. No PDF is stored (`filePath` null).
 5. Normalise: match `nameAsPrinted` to catalogue aliases (markers.js), convert units with `toStd`, compute flag if missing.
-6. Review table: highlight confidence < 0.8, unknown markers, out-of-range. Every cell editable. Confirm to save.
+6. Review table: highlight confidence < 0.8, unknown markers, out-of-range, a test repeated in the report. Every cell editable. Confirm to save.
+   Doctor and lab comments from the reply land in `notes`, labelled. Warns before saving a likely duplicate: same person and date with at least half the same tests,
+   or 5+ tests with 90% the same values on another date.
 7. Save: report + results into vault, PDF encrypted into IndexedDB, mark dirty for sync.
 
 ## Data model (vault JSON, schemaVersion 1)

@@ -129,8 +129,10 @@ h4 { margin: 12px 0 2px; font-size: .9rem; }
 .result-row .rr-name { grid-column: 1 / 6; }
 .rr-del { grid-column: 6; grid-row: 1; align-self: end; padding: 8px 4px; }
 .rr-hints { grid-column: 1 / -1; margin: 0; font-size: 12px; }
-.result-row.hint-unknown .rr-hints, .result-row.hint-low .rr-hints { color: var(--warn); }
-.result-row.hint-range:not(.hint-unknown):not(.hint-low) .rr-hints { color: var(--high); }
+.result-row.hint-unknown .rr-hints, .result-row.hint-low .rr-hints, .result-row.hint-dup .rr-hints { color: var(--warn); }
+.report-notes { white-space: pre-wrap; }
+[data-dup]:empty { display: none; }
+.result-row.hint-range:not(.hint-unknown):not(.hint-low):not(.hint-dup) .rr-hints { color: var(--high); }
 .result-row.hint-unknown input[data-f="name"], .result-row.hint-low input[data-f="value"] { border-color: var(--warn); }
 .result-row.hint-range input[data-f="value"] { color: var(--high); }
 .modal { position: fixed; inset: 0; z-index: 50; display: flex; padding: 16px; overflow-y: auto; background: rgba(0, 0, 0, .6); }
