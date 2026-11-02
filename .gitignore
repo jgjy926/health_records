@@ -4,6 +4,8 @@ mobile/www/
 mobile/android/app/build/
 mobile/gateway.local.json
 *.apk
+*.jks
+*.keystore
 .wrangler/
 .dev.vars
 # never commit real reports or exported vaults

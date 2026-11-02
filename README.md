@@ -35,6 +35,9 @@ npm run sync
 ```
 Then build in Android Studio, or `cd android && gradlew assembleDebug` with `JAVA_HOME` set to Android Studio's `jbr` folder. Run `npm run sync` after every change to the web code.
 
+### Release build
+`node mobile/scripts/setup-signing.mjs` creates the signing key once, in `~/.keystores`, outside the repo. Back that folder up: without it Android won't accept updates to the installed app. Then `npm run sync` in `mobile`, and `gradlew assembleRelease` in `mobile/android`; the APK is `app/build/outputs/apk/release/app-release.apk`.
+
 ## Browser test without deploying
 `python tests/fixtures/make_fixtures.py` writes made-up PDFs. `node tests/e2e-server.mjs` then serves the app with the real Worker on a fake Koofr at http://localhost:8090 (gateway URL `http://localhost:8090/gw`, token `e2e-token`).
 

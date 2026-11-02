@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+// Release signing key, kept outside this public repo (mobile/scripts/setup-signing.mjs creates it).
+// Without it, assembleRelease still works but gives an unsigned APK that can't be installed.
+def signingDir = new File(System.getenv('HR_KEYSTORE_DIR') ?: new File(System.getProperty('user.home'), '.keystores').path)
+def signingProps = new Properties()
+def signingFile = new File(signingDir, 'health-records.properties')
+if (signingFile.exists()) signingFile.withInputStream { signingProps.load(it) }
+
 android {
     namespace = "io.github.jgjy926.healthrecords"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +23,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (signingFile.exists()) {
+            release {
+                storeFile new File(signingDir, 'health-records.jks')
+                storePassword signingProps.getProperty('password')
+                keyAlias 'health-records'
+                keyPassword signingProps.getProperty('password')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (signingFile.exists()) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
