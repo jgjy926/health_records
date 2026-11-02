@@ -6,7 +6,7 @@ import { esc, emptyState, openModal, showToast, confirmDialog } from './ui.js';
 import * as vault from './vault.js';
 import { extractPdfText } from './parse.js';
 import { maskText, maskMore, findLeaks, MASK_TOKEN } from './mask.js';
-import { buildPrompt, enrichWithWorkers, openEnrichPanel } from './enrich.js';
+import { buildPrompt, buildAttachPrompt, enrichWithWorkers, openEnrichPanel } from './enrich.js';
 import { normalizeResult } from './markers.js';
 import {
   newReportId, saveReport, reportFieldsHtml, readReportFields, resultsEditorHtml, wireResultsEditor, readResults,
@@ -78,7 +78,10 @@ function renderPick(el, p) {
       <div class="field mt"><label for="addPerson">Whose report is it?</label>
         <select id="addPerson">${liveProfiles().map(x => `<option value="${esc(x.id)}" ${x.id === p.id ? 'selected' : ''}>${esc(x.displayName)}</option>`).join('')}</select></div>
       <p class="actions"><label class="btn btn-primary" for="addFile">Pick PDF</label>
+        <button type="button" class="btn" data-reply>Paste AI reply</button>
         <a class="btn" href="#reports/new">Enter by hand</a></p>
+      <p class="muted">PDF too big, or already read in Claude? Use <strong>Paste AI reply</strong>: copy the prompt,
+        attach the report to Claude yourself, then paste the reply back. The PDF isn't stored with the report.</p>
       <input id="addFile" class="sr-only" type="file" accept="application/pdf,.pdf">
       <p id="addStatus" class="muted mt" role="status"></p>
       <p id="addError" class="form-error" role="alert"></p>
@@ -87,6 +90,21 @@ function renderPick(el, p) {
     const file = e.target.files[0];
     e.target.value = '';
     if (file) handleFile(el, file, el.querySelector('#addPerson').value);
+  };
+  el.querySelector('[data-reply]').onclick = () => {
+    const profileId = el.querySelector('#addPerson').value;
+    openEnrichPanel({
+      title: 'Paste AI reply',
+      prompt: buildAttachPrompt(),
+      hint: 'Copy this prompt into Claude and attach the report there. Remove your name and IC number from it if you can.',
+      importReply: reply => {
+        state.add = {
+          step: 'review', bytes: null, profileId, name: '', source: 'ai-paste', report: reply.report,
+          results: reply.results.map(r => normalizeResult(r, state.vault.markers)),
+        };
+        refresh();
+      },
+    });
   };
 }
 
@@ -114,7 +132,7 @@ async function handleFile(el, file, profileId) {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (!isPdf(bytes)) throw new Error('That file is not a PDF. Only PDF reports are supported.');
-    if (bytes.length > MAX_PDF_BYTES) throw new Error('That PDF is over 8 MB, the most the app can store and sync.');
+    if (bytes.length > MAX_PDF_BYTES) throw new Error('That PDF is over 8 MB, the most the app can store and sync. Use Paste AI reply instead.');
     status.textContent = 'Opening the PDF…';
     const { pages, scanned } = await extractPdfText(file, { onProgress: m => { status.textContent = m; }, askPassword });
     if (!state.vault) return;   // locked while reading
@@ -222,7 +240,7 @@ function renderReview(el) {
   const needsLook = a.results.filter(r => !r.marker || (typeof r.confidence === 'number' && r.confidence < 0.8)).length;
   el.innerHTML = `<h2>Review every value</h2>
     <form class="card" id="reviewForm">
-      <p class="muted">Compare with the PDF. Nothing is saved until you confirm.${needsLook ? ` <strong class="warn-text">${needsLook} row(s) need a closer look.</strong>` : ''}</p>
+      <p class="muted">Compare with the ${a.bytes ? 'PDF' : 'report'}. Nothing is saved until you confirm.${needsLook ? ` <strong class="warn-text">${needsLook} row(s) need a closer look.</strong>` : ''}</p>
       ${reportFieldsHtml(a.report)}
       <h3 class="mt">Results (${a.results.length})</h3>
       ${resultsEditorHtml(a.results)}
@@ -243,9 +261,10 @@ function renderReview(el) {
     el.querySelector('#reviewError').textContent = error;
     if (error) return;
     const id = newReportId(fields.date);
-    const filePath = `files/${id}.pdf.enc`;
+    // Paste AI reply has no PDF, so the report has no file.
+    const filePath = a.bytes ? `files/${id}.pdf.enc` : null;
     // The PDF first: a report must never point at a file that didn't get stored.
-    await vault.savePdf(filePath, a.bytes);
+    if (filePath) await vault.savePdf(filePath, a.bytes);
     await saveReport({ ...fields, id, profileId: a.profileId, filePath, source: a.source }, results);
     state.add = null;
     await clearDraft();

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEnrichedJson, parseLabReply, cleanLabReply, buildPrompt, normalizeEnriched } from '../src/enrich.js';
+import { parseEnrichedJson, parseLabReply, cleanLabReply, buildPrompt, buildAttachPrompt, normalizeEnriched } from '../src/enrich.js';
 import { groupLines } from '../src/parse.js';
 import { isPdf } from '../src/add.js';
 
@@ -82,4 +82,13 @@ test('only real PDFs pass the header check', () => {
   assert.equal(isPdf(new TextEncoder().encode('%PDF-1.7 ...')), true);
   assert.equal(isPdf(new TextEncoder().encode('<html>')), false);
   assert.equal(isPdf(new Uint8Array(0)), false);
+});
+
+test('attach prompt asks Claude to drop identifiers and keeps the schema', () => {
+  const p = buildAttachPrompt();
+  assert.match(p, /attached as a PDF or image/);
+  assert.match(p, /personal identifiers/);
+  assert.match(p, /"nameAsPrinted"/);
+  assert.match(p, /single ```json code block/);
+  assert.doesNotMatch(p, /\[MASKED\]|<<<REPORT/);
 });

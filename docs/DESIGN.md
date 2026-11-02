@@ -46,7 +46,7 @@ passcode changes stay on each device. The Worker refuses a vault that contains `
 | Phone lost/borrowed | Passcode, auto-lock, encrypted storage |
 | Koofr or Worker breached | Only ciphertext stored |
 | App token leaked | Attacker gets ciphertext only; rotate token |
-| AI provider sees report | Identifiers masked first |
+| AI provider sees report | Identifiers masked first (Paste AI reply: the user attaches the file to Claude themselves, unmasked; the prompt asks it to leave identifiers out) |
 | Public code | No secrets or data in repo |
 | Forgotten passcode | Recovery key (otherwise unrecoverable by design) |
 
@@ -57,6 +57,7 @@ passcode changes stay on each device. The Worker refuses a vault that contains `
 3. Mask identifiers (mask.js) -> user reviews/taps to mask more.
 4. Enrich: (a) copy/paste panel (enrich.js) — prompt = instructions + masked text + result JSON schema;
    paste reply -> forgiving parse; or (b) POST masked text to gateway `/ai-extract` (Workers AI, JSON schema output).
+   (c) Paste AI reply, for a PDF over 8 MB or one already read in Claude: skips steps 1-3, the user attaches the report to Claude outside the app and pastes the reply. No PDF is stored (`filePath` null).
 5. Normalise: match `nameAsPrinted` to catalogue aliases (markers.js), convert units with `toStd`, compute flag if missing.
 6. Review table: highlight confidence < 0.8, unknown markers, out-of-range. Every cell editable. Confirm to save.
 7. Save: report + results into vault, PDF encrypted into IndexedDB, mark dirty for sync.
