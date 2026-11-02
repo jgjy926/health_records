@@ -3,7 +3,8 @@ import { APP_VERSION } from './config.js';
 import { state } from './state.js';
 import { initLock, showLock } from './lock.js';
 import { renderSwitcher } from './profiles.js';
-import { renderOverview, renderAdd, renderTrends, renderSettings } from './views.js';
+import { renderOverview, renderTrends, renderSettings } from './views.js';
+import { renderAdd } from './add.js';
 import { renderReports } from './reports.js';
 
 const VIEWS = {

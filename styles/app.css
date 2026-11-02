@@ -131,6 +131,14 @@ h4 { margin: 12px 0 2px; font-size: .9rem; }
 .result-row.hint-range input[data-f="value"] { color: var(--high); }
 .modal { position: fixed; inset: 0; z-index: 50; display: flex; padding: 16px; overflow-y: auto; background: rgba(0, 0, 0, .6); }
 .modal-card { width: 100%; max-width: 480px; margin: auto; padding: 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
+.code-box { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); font: 12px/1.5 ui-monospace, monospace; }
+.warn-text { color: var(--warn); }
+.masked-text { max-height: 55vh; overflow: auto; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+  white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.7 ui-monospace, monospace; }
+.masked-text .masked { padding: 1px 4px; border-radius: 4px; background: var(--surface-2); color: var(--warn); }
+.word { all: unset; cursor: pointer; border-radius: 4px; }
+.word:hover, .word:focus-visible { background: var(--surface-2); outline: 1px solid var(--border); }
+label.btn { cursor: pointer; }
 .toast { position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 12px); transform: translateX(-50%);
   z-index: 200; max-width: 90vw; padding: 10px 16px; border-radius: 10px; background: var(--surface-2);
   border: 1px solid var(--border); opacity: 0; pointer-events: none; transition: opacity .2s; }

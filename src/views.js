@@ -28,21 +28,6 @@ export function renderOverview(el) {
   el.innerHTML = `<h2>Overview</h2><p class="muted">Latest checkup ${esc(fmtDate(reports[0].date))}</p>`;
 }
 
-export function renderAdd(el) {
-  const p = currentProfile();
-  if (!p) { el.innerHTML = needProfile(); return; }
-  // Phase 4: pick PDF -> extract on device -> mask -> AI enrich (paste / Workers AI) -> review -> save.
-  el.innerHTML = `<h2>Add a report</h2>
-    <div class="card">
-      <ol class="muted steps">
-        <li>Pick the PDF (stays on this device)</li><li>Check the masked text</li>
-        <li>Enrich with AI (copy/paste into Claude, or Workers AI)</li><li>Review every value</li><li>Save</li>
-      </ol>
-      <p class="mt"><button class="btn btn-primary" type="button" disabled>Pick PDF (Phase 4)</button>
-        <a class="btn" href="#reports/new">Enter by hand</a></p>
-    </div>`;
-}
-
 export function renderTrends(el) {
   const p = currentProfile();
   if (!p) { el.innerHTML = needProfile(); return; }
@@ -51,8 +36,9 @@ export function renderTrends(el) {
 }
 
 export function renderSettings(el) {
-  const minutes = state.vault.settings.autoLockMinutes;
-  // Phase 4/6: AI mode, gateway URL + token, export.
+  const settings = state.vault.settings;
+  const minutes = settings.autoLockMinutes;
+  // Phase 6: test connection, sync, export.
   el.innerHTML = `<h2>Settings</h2>
     <div class="card" id="peopleCard"></div>
     <div class="card"><h3>Security</h3>
@@ -77,14 +63,35 @@ export function renderSettings(el) {
         </form>
         <div id="rkShow" class="mt" hidden></div></details>
     </div>
-    <div class="card"><h3>AI</h3><p class="muted">Copy/paste into Claude (default) or Workers AI fallback. (Phase 4)</p></div>
-    <div class="card"><h3>Sync</h3><p class="muted">health-gateway URL and app token. (Phase 6)</p></div>
+    <div class="card"><h3>AI</h3>
+      <div class="field"><label for="aiMode">First choice when reading a report</label>
+        <select id="aiMode">
+          <option value="paste" ${settings.aiMode === 'paste' ? 'selected' : ''}>Copy/paste into Claude</option>
+          <option value="workers" ${settings.aiMode === 'workers' ? 'selected' : ''}>Workers AI (free fallback, needs the gateway)</option>
+        </select></div>
+      <p class="muted">Identifiers are masked before either one sees the text.</p></div>
+    <div class="card" id="syncCard"><h3>Sync</h3>
+      <div class="field"><label for="gwUrl">Gateway URL</label><input id="gwUrl" type="url" inputmode="url" placeholder="https://health-gateway.you.workers.dev" autocomplete="off" spellcheck="false" value="${esc(settings.gatewayUrl)}"></div>
+      <div class="field"><label for="gwToken">App token (kept inside the encrypted vault)</label><input id="gwToken" type="password" autocomplete="off" value="${esc(settings.appToken)}"></div>
+      <p class="actions" data-sync-actions><button type="button" class="btn" id="gwSave">Save</button></p>
+      <p class="muted" id="gwStatus" role="status"></p></div>
     <div class="card"><h3>Backup</h3><p class="muted">Encrypted backup file and CSV export. (Phase 6)</p></div>
     <div class="card" id="markerCard"></div>
     <p class="muted">Version ${esc(APP_VERSION)}</p>`;
   renderPeople(el.querySelector('#peopleCard'));
   wireSecurity(el);
   renderMarkerCard(el.querySelector('#markerCard'));
+  el.querySelector('#aiMode').onchange = async e => {
+    settings.aiMode = e.target.value;
+    await vault.save();
+    showToast('Saved');
+  };
+  el.querySelector('#gwSave').onclick = async () => {
+    settings.gatewayUrl = el.querySelector('#gwUrl').value.trim().replace(/\/+$/, '');
+    settings.appToken = el.querySelector('#gwToken').value.trim();
+    await vault.save();
+    showToast('Saved');
+  };
 }
 
 // ---------- marker catalogue: built-ins are read-only, your own live in vault.markers ----------

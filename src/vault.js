@@ -141,6 +141,7 @@ export async function setPasscodeAfterRecovery(newCode) {
 export function lock() {
   state.vault = null;
   state.currentProfileId = null;
+  state.add = null;
   dataKey = null;
   recoveringKey = null;
   pendingSetup = null;

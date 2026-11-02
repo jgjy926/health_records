@@ -30,13 +30,13 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - Done when: a hand-entered report shows correct flags and survives lock/unlock.
 
 ## Phase 4 — PDF parse, masking, AI enrich, review
-- [ ] npm install && npm run vendor; commit ./vendor
-- [ ] parse.js: pdf.js text with line grouping by y-position; scanned detection; Tesseract fallback with progress
-- [ ] mask.js + tests/mask.test.mjs (IC, phone, email, names with odd spacing/case, address lines)
-- [ ] Masked-text review with tap-to-mask
-- [ ] enrich.js: lab-report prompt + schema; restyle the panel with app.css classes (no Tailwind)
-- [ ] Gateway /ai-extract (Workers AI, json_schema response) + client call when aiMode = workers
-- [ ] Review table (editable, highlights), normalise, save report + encrypted PDF
+- [x] npm install && npm run vendor; commit ./vendor
+- [x] parse.js: pdf.js text with line grouping by y-position; scanned detection; Tesseract fallback with progress
+- [x] mask.js + tests/mask.test.mjs (IC, phone, email, names with odd spacing/case, address lines)
+- [x] Masked-text review with tap-to-mask
+- [x] enrich.js: lab-report prompt + schema; restyle the panel with app.css classes (no Tailwind)
+- [x] Gateway /ai-extract (Workers AI, json_schema response) + client call when aiMode = workers
+- [x] Review table (editable, highlights), normalise, save report + encrypted PDF
 - Done when: one real de-identified PDF parses and every value is correct after review.
 
 ## Phase 5 — Overview and Trends

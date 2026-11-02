@@ -16,6 +16,7 @@ export function emptyVault() {
 export const state = {
   vault: null,              // decrypted vault while unlocked, null while locked
   currentProfileId: null,
+  add: null,                // the Add flow in progress: PDF bytes and masked text, memory only
   view: 'overview',
 };
 

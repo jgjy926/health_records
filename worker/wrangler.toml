@@ -10,6 +10,8 @@ compatibility_date = "2026-10-01"
 [vars]
 ALLOWED_ORIGIN = "https://jgjy926.github.io"
 KOOFR_BASE = "https://app.koofr.net/dav/Koofr/health_records"
+# Must support JSON mode: https://developers.cloudflare.com/workers-ai/features/json-mode/
+AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 
 [ai]
 binding = "AI"
