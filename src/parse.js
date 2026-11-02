@@ -48,14 +48,18 @@ function loadScript(src) {
 
 async function ocrWorker(onProgress) {
   if (!globalThis.Tesseract) await loadScript(vendorUrl('tesseract/tesseract.min.js'));
-  return globalThis.Tesseract.createWorker('eng', 1, {
-    workerPath: vendorUrl('tesseract/worker.min.js'),
-    corePath: vendorUrl('tesseract/core/'),
-    langPath: vendorUrl('tesseract/lang/'),
-    workerBlobURL: false,
-    gzip: true,
-    cacheMethod: 'none',    // nothing about the report stays in browser storage
-    logger: m => { if (m.status === 'recognizing text') onProgress(m.progress); },
+  // createWorker's own promise never settles when a file fails to load; only errorHandler hears about it.
+  return new Promise((resolve, reject) => {
+    globalThis.Tesseract.createWorker('eng', 1, {
+      workerPath: vendorUrl('tesseract/worker.min.js'),
+      corePath: vendorUrl('tesseract/core/'),
+      langPath: vendorUrl('tesseract/lang/'),
+      workerBlobURL: false,
+      gzip: false,
+      cacheMethod: 'none',    // nothing about the report stays in browser storage
+      logger: m => { if (m.status === 'recognizing text') onProgress(m.progress); },
+      errorHandler: () => reject(new Error('The scanned-PDF reader could not start. Enter this report by hand.')),
+    }).then(resolve, reject);
   });
 }
 

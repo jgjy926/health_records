@@ -1,5 +1,7 @@
 // Small DOM helpers shared by every view.
 
+import { isNative, shareBytes } from './native.js';
+
 // Everything from a PDF, AI or the vault is untrusted text: escape before innerHTML.
 export function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
@@ -62,6 +64,7 @@ export function confirmDialog(message, { okLabel = 'OK', danger = false } = {}) 
 
 // Hand decrypted bytes to the browser's viewer. The object URL lives only as long as it's needed.
 export async function openBytes(bytes, filename, mime) {
+  if (isNative()) { await shareBytes(bytes, filename); return; }
   const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
   const a = document.createElement('a');
   a.href = url;
@@ -75,6 +78,7 @@ export async function openBytes(bytes, filename, mime) {
 
 // Save bytes as a file. Only for things the user asked to export.
 export async function downloadFile(bytes, filename, mime) {
+  if (isNative()) { await shareBytes(bytes, filename); return; }
   const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
   const a = document.createElement('a');
   a.href = url;

@@ -1,7 +1,8 @@
 // Bootstrap: lock screen first, then hash-routed tabs.
 import { APP_VERSION } from './config.js';
 import { state } from './state.js';
-import { initLock, showLock } from './lock.js';
+import { initLock, showLock, appActiveChanged } from './lock.js';
+import { initNative } from './native.js';
 import { renderSwitcher } from './profiles.js';
 import { renderOverview, renderSettings } from './views.js';
 import { renderTrends } from './trends.js';
@@ -59,3 +60,4 @@ document.getElementById('syncStatus').addEventListener('click', syncNow);
 setSyncListener(showSyncStatus);
 startSync(remoteChanged);
 initLock(renderAll);
+initNative({ onActiveChange: appActiveChanged });

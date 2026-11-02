@@ -306,14 +306,23 @@ function checkAutoLock() {
   if ((hiddenSince !== null && now - hiddenSince >= AUTO_LOCK_BACKGROUND_MS) || now - lastActivity >= idleLimitMs()) showLock();
 }
 
+const touch = () => { lastActivity = Date.now(); };
+
+// Page visibility on the web, the App plugin on Android (src/native.js).
+export function appActiveChanged(isActive) {
+  if (!isActive) {
+    if (hiddenSince === null) hiddenSince = Date.now();
+    return;
+  }
+  checkAutoLock();
+  hiddenSince = null;
+  touch();
+}
+
 function startAutoLock() {
-  const touch = () => { lastActivity = Date.now(); };
   ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev =>
     document.addEventListener(ev, touch, { passive: true, capture: true }));
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) hiddenSince = Date.now();
-    else { checkAutoLock(); hiddenSince = null; touch(); }
-  });
+  document.addEventListener('visibilitychange', () => appActiveChanged(!document.hidden));
   window.addEventListener('pageshow', checkAutoLock);
   setInterval(checkAutoLock, AUTO_LOCK_CHECK_MS);
   // Another tab wrote the vault: this tab's copy is stale and a save here would overwrite that change.

@@ -3,6 +3,7 @@
   "appName": "Health Records",
   "webDir": "www",
   "backgroundColor": "#060912",
+  "loggingBehavior": "none",
   "zoomEnabled": true,
   "server": {
     "androidScheme": "https",

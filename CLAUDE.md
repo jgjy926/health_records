@@ -29,5 +29,5 @@ Read first: `docs/DESIGN.md` (spec, source of truth) and `docs/BUILD_PLAN.md` (p
 - Android: `cd mobile && npm install && npm run sync`, then build in Android Studio
 
 ## Layout
-index.html · styles/app.css · src/ (main, config, state, ui, lock, vault, crypto, profiles, markers, reports, add, trends, parse, mask,
+index.html · styles/app.css · src/ (main, config, state, ui, lock, vault, crypto, profiles, markers, reports, add, trends, native, parse, mask,
 enrich, sync, views) · vendor/ (generated) · worker/ · mobile/ · scripts/vendor.mjs · docs/ · tests/

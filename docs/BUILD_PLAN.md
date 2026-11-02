@@ -55,9 +55,12 @@ bump `APP_VERSION` in `src/config.js`, commit, and stop to report before the nex
 - Done when: Koofr holds only .enc files; laptop and phone show the same data.
 
 ## Phase 7 — Android
-- [ ] `cd mobile && npm install && npx cap add android`
-- [ ] MainActivity: FLAG_SECURE; release build has WebView debugging off
-- [ ] Lock on app pause (Capacitor App plugin), Back button: close modal -> Overview -> background
-- [ ] PDF picking from Android file picker works; exports open the share sheet
-- [ ] Build APK in Android Studio; install; check lock on background
+- [x] `cd mobile && npm install && npx cap add android`
+- [x] MainActivity: FLAG_SECURE; release build has WebView debugging off
+- [x] Lock after 1 min in the background (Capacitor App plugin), per DESIGN.md Security 5, Back button: close modal -> Overview -> background
+- [x] PDF picking from Android file picker works; exports open the share sheet
+- [x] Build debug APK with Gradle; install on the emulator; check lock on background
+- [x] Launcher icon and splash: Med.Record (`mobile/scripts/make-icons.py`)
+- [ ] Install on a real phone; check WebView debugging is off in chrome://inspect (the emulator's OS keeps it on)
+- [ ] Release signing with your own keystore
 - Done when: APK installs, locks on background, and the user can backfill 3–4 years of reports.

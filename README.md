@@ -10,7 +10,7 @@ npm run vendor       # copy them into ./vendor (commit the result)
 npm run serve        # http://localhost:8080
 npm test
 ```
-Status: **Phase 6 done** (not yet deployed). Android comes in Phase 7.
+Status: **Phase 7 done** (gateway not yet deployed).
 
 ## Deploy the gateway (free tier)
 1. Koofr: create an app password (Account > Preferences > Password > App passwords). The Worker makes the `/health_records` folder itself.
@@ -26,6 +26,17 @@ Status: **Phase 6 done** (not yet deployed). Android comes in Phase 7.
 6. In the app: Settings > Sync, enter the URL and token, press Test connection, then Sync now.
 
 A second device: on first run choose "Already use this on another device? Join it", and enter the recovery key, URL and token.
+
+## Android
+```bash
+cd mobile
+npm install
+npm run sync
+```
+Then build in Android Studio, or `cd android && gradlew assembleDebug` with `JAVA_HOME` set to Android Studio's `jbr` folder. Run `npm run sync` after every change to the web code.
+
+## Browser test without deploying
+`python tests/fixtures/make_fixtures.py` writes made-up PDFs. `node tests/e2e-server.mjs` then serves the app with the real Worker on a fake Koofr at http://localhost:8090 (gateway URL `http://localhost:8090/gw`, token `e2e-token`).
 
 ## Publish the web app
 Push this repo to GitHub and turn on Pages for the root of `main`. It holds code only: `.gitignore` keeps out reports, vaults and tokens.

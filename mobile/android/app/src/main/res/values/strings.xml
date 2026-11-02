@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Health Records</string>
+    <string name="title_activity_main">Health Records</string>
+    <string name="package_name">io.github.jgjy926.healthrecords</string>
+    <string name="custom_url_scheme">io.github.jgjy926.healthrecords</string>
+</resources>

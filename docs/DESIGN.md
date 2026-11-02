@@ -33,7 +33,8 @@ passcode changes stay on each device. The Worker refuses a vault that contains `
    (`recoveryAt` lets the newest recovery key win across devices). `health_records.sync` holds `{ etag, dirty, lastAt }`.
    PDFs go to IndexedDB, encrypted. Decrypted data lives only in memory (`state.vault`).
 4. **App token** for the gateway is stored inside the encrypted vault, never in plain localStorage, never in the APK.
-5. **Auto-lock**: 1 min in background, 5 min idle (configurable). Lock clears `state.vault` and the data key.
+5. **Auto-lock**: 1 min in background, 5 min idle (configurable), on Android too: an instant lock would throw the user out
+   of the file picker and the copy/paste trip to Claude. Lock clears `state.vault` and the data key. FLAG_SECURE hides the screen in Recents meanwhile.
 6. **Retry delay** after wrong passcodes: 0,0,0,1s,5s,30s,5min (count and end time persisted in `health_records.attempts`, no health data).
 7. **De-identification before AI**: mask IC (`\d{6}-?\d{2}-?\d{4}`), phones, emails, profile names + `maskNames`,
    address blocks, MRN/lab-number labels. User reviews masked text and can mask more.
