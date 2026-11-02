@@ -11,3 +11,4 @@ mobile/gateway.local.json
 *.vault
 *.enc
 backups/
+.claude/

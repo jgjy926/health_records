@@ -1,0 +1,2 @@
+# Vendored libraries must stay byte-identical to the pinned npm packages.
+vendor/** -text
