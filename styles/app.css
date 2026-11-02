@@ -26,6 +26,7 @@ h2 { font-size: 1.2rem; } h3 { font-size: 1rem; }
 a { color: var(--accent); }
 button, input, select, textarea { font: inherit; color: inherit; }
 .muted { color: var(--muted); }
+.zh { color: var(--muted); font-weight: 400; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 [hidden] { display: none !important; }
 

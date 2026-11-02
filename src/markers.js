@@ -89,6 +89,29 @@ export const BUILTIN_MARKERS = {
   PULSE:   m('Pulse', 'Body', 'bpm', ['Heart Rate', 'Pulse Rate', 'HR', 'Nadi']),
 };
 
+// Simplified Chinese names, shown beside the English ones. Display only: not stored, not used for matching.
+const MARKER_ZH = {
+  HB: '血红蛋白', RBC: '红细胞', HCT: '红细胞压积', MCV: '平均红细胞体积', MCH: '平均红细胞血红蛋白量', MCHC: '平均红细胞血红蛋白浓度',
+  RDW: '红细胞分布宽度', WBC: '白细胞', NEUT: '中性粒细胞计数', NEUT_PCT: '中性粒细胞百分比', LYMPH: '淋巴细胞计数', LYMPH_PCT: '淋巴细胞百分比',
+  MONO: '单核细胞计数', MONO_PCT: '单核细胞百分比', EOS: '嗜酸性粒细胞计数', EOS_PCT: '嗜酸性粒细胞百分比',
+  BASO: '嗜碱性粒细胞计数', BASO_PCT: '嗜碱性粒细胞百分比', PLT: '血小板', MPV: '平均血小板体积', ESR: '血沉',
+  CHOL_TOTAL: '总胆固醇', LDL: '低密度脂蛋白胆固醇', HDL: '高密度脂蛋白胆固醇', NON_HDL: '非高密度脂蛋白胆固醇', TG: '甘油三酯', CHOL_HDL: '总胆固醇/高密度脂蛋白比值',
+  FBG: '空腹血糖', RBG: '随机血糖', HBA1C: '糖化血红蛋白',
+  ALT: '谷丙转氨酶', AST: '谷草转氨酶', ALP: '碱性磷酸酶', GGT: '谷氨酰转肽酶', TBIL: '总胆红素', DBIL: '直接胆红素',
+  ALB: '白蛋白', GLOB: '球蛋白', TP: '总蛋白', AG_RATIO: '白蛋白/球蛋白比值',
+  UREA: '尿素', BUN: '尿素氮', CREAT: '肌酐', EGFR: '估算肾小球滤过率', URIC: '尿酸', NA: '钠', K: '钾', CL: '氯', CA: '钙', PHOS: '磷',
+  TSH: '促甲状腺激素', FT4: '游离甲状腺素', FT3: '游离三碘甲状腺原氨酸',
+  U_PROTEIN: '尿蛋白', U_GLUCOSE: '尿糖', U_KETONE: '尿酮体', U_BLOOD: '尿潜血', U_LEUC: '尿白细胞酯酶', U_NITRITE: '尿亚硝酸盐', U_BILI: '尿胆红素',
+  U_UROBIL: '尿胆原', U_PH: '尿酸碱度', U_SG: '尿比重', U_RBC: '尿红细胞', U_WBC: '尿白细胞', U_ACR: '尿白蛋白/肌酐比值',
+  WEIGHT: '体重', HEIGHT: '身高', BMI: '身体质量指数', SBP: '收缩压', DBP: '舒张压', PULSE: '脉搏',
+};
+export const GROUP_ZH = {
+  'Blood count': '血常规', Lipids: '血脂', Glucose: '血糖', Liver: '肝功能', Kidney: '肾功能', Thyroid: '甲状腺', Urine: '尿液', Body: '身体测量', Other: '其他',
+};
+
+// '' for a marker the user added or one the app doesn't know.
+export function zhName(code) { return MARKER_ZH[code] || ''; }
+
 // Built-ins plus the user's own (vault.markers), which win on the same code.
 export function catalogue(custom = {}) { return { ...BUILTIN_MARKERS, ...custom }; }
 

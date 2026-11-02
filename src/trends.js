@@ -2,7 +2,7 @@
 // Markers have different units, so a group view is small multiples: one chart per marker, never a second axis.
 import { state, currentProfile, reportsForCurrent } from './state.js';
 import { esc, emptyState, fmtDate, downloadFile, showToast } from './ui.js';
-import { catalogue, toStd, MARKER_GROUPS } from './markers.js';
+import { catalogue, toStd, zhName, MARKER_GROUPS, GROUP_ZH } from './markers.js';
 import { rangeText } from './reports.js';
 
 // ---------- data ----------
@@ -208,7 +208,7 @@ function chartCard(code, reports) {
   const points = markerSeries(reports, code, custom);
   const rows = yearRows(points);
   return { points, band: latestBand(points), html: `<div class="card">
-    <h3>${esc(m.name)} <span class="muted">${esc(m.unitStd)}</span></h3>
+    <h3>${esc(m.name)} <span class="zh">${esc(zhName(code))}</span> <span class="muted">${esc(m.unitStd)}</span></h3>
     <div class="chart-box" data-chart="${esc(code)}"></div>
     ${points.length < 2 ? '<p class="muted">One result so far. The line appears with the second.</p>' : ''}
     <div class="table-wrap mt"><table class="results"><thead><tr><th>Year</th><th>Value</th><th>Flag</th><th>Change</th></tr></thead><tbody>
@@ -232,9 +232,9 @@ export function renderTrends(el, args = []) {
   const inGroup = g => codes.filter(c => cat[c].group === g);
   const chosen = pick.startsWith('group:') ? inGroup(pick.slice(6)) : codes.filter(c => c === pick);
   const shown = chosen.length ? chosen : [codes[0]];
-  const options = MARKER_GROUPS.filter(g => inGroup(g).length).map(g => `<optgroup label="${esc(g)}">
-      ${inGroup(g).length > 1 ? `<option value="group:${esc(g)}" ${pick === `group:${g}` ? 'selected' : ''}>All ${esc(g)}</option>` : ''}
-      ${inGroup(g).map(c => `<option value="${esc(c)}" ${pick === c ? 'selected' : ''}>${esc(cat[c].name)}</option>`).join('')}</optgroup>`).join('');
+  const options = MARKER_GROUPS.filter(g => inGroup(g).length).map(g => `<optgroup label="${esc(g)} ${esc(GROUP_ZH[g])}">
+      ${inGroup(g).length > 1 ? `<option value="group:${esc(g)}" ${pick === `group:${g}` ? 'selected' : ''}>All ${esc(g)} ${esc(GROUP_ZH[g])}</option>` : ''}
+      ${inGroup(g).map(c => `<option value="${esc(c)}" ${pick === c ? 'selected' : ''}>${esc(cat[c].name)} ${esc(zhName(c))}</option>`).join('')}</optgroup>`).join('');
   const cards = shown.map(c => ({ code: c, ...chartCard(c, reports) }));
   el.innerHTML = `<div class="view-head"><h2>Trends</h2><button type="button" class="btn" data-csv>Export CSV</button></div>
     <div class="field"><label for="trendPick">Marker or group</label><select id="trendPick">${options}</select></div>
@@ -265,6 +265,7 @@ export function flaggedCards(reports, custom = {}) {
     const points = r.marker ? markerSeries(reports, r.marker, custom).slice(-4) : [];
     return {
       name: r.marker && cat[r.marker] ? cat[r.marker].name : r.nameAsPrinted,
+      zh: zhName(r.marker),
       code: r.marker, value: r.value, unit: r.unit, flag: r.flag, range: rangeText(r), points, band: latestBand(points),
     };
   });

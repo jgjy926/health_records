@@ -3,7 +3,7 @@ import { state, currentProfile, reportsForCurrent } from './state.js';
 import { esc, emptyState, fmtDate, showToast, confirmDialog, openBytes } from './ui.js';
 import * as vault from './vault.js';
 import { fetchFile } from './sync.js';
-import { catalogue, computeFlag, normalizeResult, parseRange, parseValue } from './markers.js';
+import { catalogue, computeFlag, normalizeResult, parseRange, parseValue, zhName } from './markers.js';
 
 export const REPORT_TYPES = ['Annual checkup', 'Blood test', 'Urine test', 'Follow-up', 'Other'];
 const LOW_CONFIDENCE = 0.8;
@@ -76,7 +76,7 @@ function resultRowHtml(r = {}) {
   const flag = r.flag && r.flag !== auto ? r.flag : '';
   const hints = rowHints(r);
   return `<div class="result-row ${hints.map(h => h[0]).join(' ')}" data-row data-orig="${esc(JSON.stringify(r))}">
-    <label class="rr-name"><span>Marker</span><input data-f="name" list="markerList" value="${esc(r.nameAsPrinted ?? '')}" placeholder="e.g. LDL Cholesterol" autocomplete="off"></label>
+    <label class="rr-name"><span>Marker <span class="zh" data-zh>${esc(zhName(r.marker))}</span></span><input data-f="name" list="markerList" value="${esc(r.nameAsPrinted ?? '')}" placeholder="e.g. LDL Cholesterol" autocomplete="off"></label>
     <label><span>Value</span><input data-f="value" value="${esc(r.value ?? '')}" inputmode="decimal" autocomplete="off"></label>
     <label><span>Unit</span><input data-f="unit" value="${esc(r.unit ?? '')}" autocomplete="off"></label>
     <label><span>Range</span><input data-f="range" value="${esc(rangeText(r))}" placeholder="3.5 - 5.0" autocomplete="off"></label>
@@ -89,7 +89,7 @@ function resultRowHtml(r = {}) {
 }
 
 export function resultsEditorHtml(results) {
-  const options = Object.values(catalogue(state.vault.markers)).map(m => `<option value="${esc(m.name)}"></option>`).join('');
+  const options = Object.entries(catalogue(state.vault.markers)).map(([code, m]) => `<option value="${esc(m.name)}" label="${esc(zhName(code))}"></option>`).join('');
   return `<datalist id="markerList">${options}</datalist>
     <div data-rows>${results.map(resultRowHtml).join('')}</div>
     <p class="mt"><button type="button" class="btn" data-add-row>Add a result</button></p>`;
@@ -109,6 +109,7 @@ export function wireResultsEditor(root) {
     const unit = row.querySelector('[data-f="unit"]');
     const code = normalizeResult({ nameAsPrinted: e.target.value }, state.vault.markers).marker;
     const std = code && catalogue(state.vault.markers)[code].unitStd;
+    row.querySelector('[data-zh]').textContent = zhName(code);
     if (std && std !== 'text' && !unit.value) unit.value = std;
   });
 }
@@ -164,7 +165,7 @@ export function renderReports(el, args = []) {
 function detailHtml(r) {
   const cat = catalogue(state.vault.markers);
   const rows = (r.results || []).map(x => `<tr>
-      <td>${esc(x.marker && cat[x.marker] ? cat[x.marker].name : x.nameAsPrinted)}</td>
+      <td>${esc(x.marker && cat[x.marker] ? cat[x.marker].name : x.nameAsPrinted)} <span class="zh">${esc(zhName(x.marker))}</span></td>
       <td>${esc(x.value)} <span class="muted">${esc(x.unit)}</span></td>
       <td>${x.flag ? `<span class="badge flag-${esc(x.flag)}">${esc(x.flag)}</span>` : ''}</td><td class="muted">${esc(rangeText(x))}</td></tr>`).join('');
   return `<div class="card">

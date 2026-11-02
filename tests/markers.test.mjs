@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  computeFlag, BUILTIN_MARKERS, MARKER_GROUPS, matchMarker, toStd, normalizeUnit, parseRange, parseValue, normalizeResult, numericValue,
+  computeFlag, BUILTIN_MARKERS, MARKER_GROUPS, GROUP_ZH, zhName, matchMarker, toStd, normalizeUnit, parseRange, parseValue, normalizeResult, numericValue,
 } from '../src/markers.js';
 
 test('computeFlag uses the printed range', () => {
@@ -146,4 +146,12 @@ test('normalizeResult: urine words, unknown markers, printed flag wins', () => {
   assert.equal(unknown.marker, null);
   assert.equal(unknown.unitStd, null);
   assert.equal(unknown.flag, 'H');
+});
+
+test('every built-in marker and group has a Chinese name', () => {
+  for (const code of Object.keys(BUILTIN_MARKERS)) assert.ok(zhName(code), code);
+  for (const g of MARKER_GROUPS) assert.ok(GROUP_ZH[g], g);
+  assert.equal(zhName('LDL'), '低密度脂蛋白胆固醇');
+  assert.equal(zhName(null), '');
+  assert.equal(zhName('MY_OWN'), '');
 });

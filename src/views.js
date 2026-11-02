@@ -2,7 +2,7 @@
 // Shell: empty states + layout only. Later phases fill each one (see docs/BUILD_PLAN.md).
 import { state, currentProfile, reportsForCurrent } from './state.js';
 import { renderPeople, renderSwitcher } from './profiles.js';
-import { catalogue, MARKER_GROUPS } from './markers.js';
+import { catalogue, zhName, MARKER_GROUPS, GROUP_ZH } from './markers.js';
 import { flaggedCards, sparklineSvg, exportCsv } from './trends.js';
 import { testConnection, syncNow, syncStatus, buildBackup, restoreIntoOpenVault } from './sync.js';
 import { esc, emptyState, fmtDate, showToast, openModal, downloadFile } from './ui.js';
@@ -35,7 +35,7 @@ export function renderOverview(el) {
       <span class="badge ${cards.length ? 'flag-H' : 'flag-N'}">${cards.length ? `${cards.length} flagged` : 'All in range'}</span></a>
     <h3 class="mt">${cards.length ? 'Outside the range' : 'Nothing outside the range'}</h3>
     <div class="grid">${cards.map(c => `<a class="card flag-card" ${c.code ? `href="#trends/${esc(c.code)}"` : ''}>
-        <span class="flag-card-head"><strong>${esc(c.name)}</strong><span class="badge flag-${esc(c.flag)}">${c.flag === 'H' ? 'High' : 'Low'}</span></span>
+        <span class="flag-card-head"><span><strong>${esc(c.name)}</strong> <span class="zh">${esc(c.zh)}</span></span><span class="badge flag-${esc(c.flag)}">${c.flag === 'H' ? 'High' : 'Low'}</span></span>
         <span>${esc(c.value)} <span class="muted">${esc(c.unit)}</span></span>
         <span class="muted">Range ${esc(c.range) || 'not printed'}</span>
         ${sparklineSvg(c.points, c.band)}</a>`).join('')}</div>
@@ -151,7 +151,7 @@ function renderMarkerCard(el) {
     <p class="muted">${Object.keys(all).length} markers, ${Object.keys(custom).length} of them yours. Add one when a report uses a test the app doesn't know.</p>
     <details><summary>Show all</summary>${MARKER_GROUPS.map(g => {
       const names = Object.entries(all).filter(([, m]) => m.group === g);
-      return names.length ? `<h4>${esc(g)}</h4><p class="muted">${names.map(([, m]) => `${esc(m.name)} (${esc(m.unitStd)})`).join(', ')}</p>` : '';
+      return names.length ? `<h4>${esc(g)} <span class="zh">${esc(GROUP_ZH[g])}</span></h4><p class="muted">${names.map(([code, m]) => `${esc(m.name)} ${esc(zhName(code))} (${esc(m.unitStd)})`).join(', ')}</p>` : '';
     }).join('')}</details>
     <p class="mt"><button type="button" class="btn" data-add-marker>Add a marker</button></p>`;
   el.querySelector('[data-add-marker]').onclick = () => {
