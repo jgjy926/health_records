@@ -1,0 +1,13 @@
+node_modules/
+mobile/node_modules/
+mobile/www/
+mobile/android/app/build/
+mobile/gateway.local.json
+*.apk
+.wrangler/
+.dev.vars
+# never commit real reports or exported vaults
+*.pdf
+*.vault
+*.enc
+backups/

@@ -1,0 +1,15 @@
+name = "health-gateway"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+# Secrets (npx wrangler secret put <NAME>):
+#   KOOFR_USER   Koofr account email
+#   KOOFR_PASS   Koofr *app password* (not your login password)
+#   APP_TOKEN    long random string, e.g. `openssl rand -hex 32` — different from cashback-gateway's
+
+[vars]
+ALLOWED_ORIGIN = "https://jgjy926.github.io"
+KOOFR_BASE = "https://app.koofr.net/dav/Koofr/health_records"
+
+[ai]
+binding = "AI"

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- No third-party scripts, fonts or CDNs: every library is vendored into ./vendor (npm run vendor).
+       connect-src allows only the health-gateway Worker. 'wasm-unsafe-eval' is for Tesseract.js (Phase 4). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#060912">
+  <title>Health Records</title>
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles/app.css">
+</head>
+<body>
+  <!-- Lock screen: covers everything until the vault is unlocked (Phase 2) -->
+  <section id="lockScreen" class="lock" aria-label="Locked">
+    <div class="lock-card">
+      <img src="./icons/icon.svg" alt="" class="lock-logo" width="56" height="56">
+      <h1 class="lock-title">Health Records</h1>
+      <p id="lockHint" class="muted">Enter your passcode</p>
+      <div id="lockDots" class="lock-dots" aria-hidden="true"></div>
+      <div id="lockPad" class="keypad" role="group" aria-label="Passcode keypad"></div>
+      <p id="lockError" class="lock-error" role="alert"></p>
+      <button id="lockRecover" class="link-btn" type="button">Forgot passcode? Use recovery key</button>
+    </div>
+  </section>
+
+  <div id="app" class="app" hidden>
+    <header class="topbar">
+      <div class="brand">
+        <img src="./icons/icon.svg" alt="" width="32" height="32">
+        <div>
+          <div class="brand-name">Health Records</div>
+          <div id="appVersion" class="brand-version"></div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <label class="sr-only" for="profileSwitcher">Person</label>
+        <select id="profileSwitcher" class="profile-switcher" title="Switch person (up to 5)"></select>
+        <span id="syncStatus" class="sync-pill" title="Sync status">Not synced</span>
+        <button id="lockNow" class="icon-btn" type="button" title="Lock now" aria-label="Lock now">&#128274;</button>
+      </div>
+    </header>
+
+    <main id="main" class="main">
+      <section id="view-overview" class="view" data-view="overview"></section>
+      <section id="view-reports"  class="view" data-view="reports"  hidden></section>
+      <section id="view-add"      class="view" data-view="add"      hidden></section>
+      <section id="view-trends"   class="view" data-view="trends"   hidden></section>
+      <section id="view-settings" class="view" data-view="settings" hidden></section>
+    </main>
+
+    <nav class="tabbar" aria-label="Sections">
+      <a href="#overview" data-tab="overview"><span class="tab-icon">&#9673;</span><span>Overview</span></a>
+      <a href="#reports"  data-tab="reports"><span class="tab-icon">&#9636;</span><span>Reports</span></a>
+      <a href="#add"      data-tab="add" class="tab-add"><span class="tab-icon">&#65291;</span><span>Add</span></a>
+      <a href="#trends"   data-tab="trends"><span class="tab-icon">&#8599;</span><span>Trends</span></a>
+      <a href="#settings" data-tab="settings"><span class="tab-icon">&#9881;</span><span>Settings</span></a>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

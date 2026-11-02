@@ -1,0 +1,15 @@
+{
+  "appId": "io.github.jgjy926.healthrecords",
+  "appName": "Health Records",
+  "webDir": "www",
+  "backgroundColor": "#060912",
+  "zoomEnabled": true,
+  "server": {
+    "androidScheme": "https",
+    "hostname": "jgjy926.github.io"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}
