@@ -30,16 +30,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 
 /* ---------- lock screen ---------- */
-.lock { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px;
+.lock { position: fixed; inset: 0; z-index: 100; display: flex; padding: 24px; overflow-y: auto;
   background: radial-gradient(circle at 30% 20%, #10213a 0, var(--bg) 60%); }
-.lock-card { width: 100%; max-width: 340px; text-align: center; }
+.lock-card { width: 100%; max-width: 340px; margin: auto; text-align: center; }
 .lock-logo { border-radius: 14px; margin-bottom: 12px; }
 .lock-title { font-size: 1.4rem; }
 .lock-dots { display: flex; gap: 12px; justify-content: center; margin: 18px 0; min-height: 14px; }
 .lock-dots span { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--muted); }
 .lock-dots span.on { background: var(--accent); border-color: var(--accent); }
-.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 auto; max-width: 280px; }
-.keypad button { height: 64px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface);
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; gap: 12px; margin: 0 auto; max-width: 280px; }
+.keypad button { width: 68px; height: 68px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface);
   font-size: 1.4rem; cursor: pointer; }
 .keypad button:active { background: var(--surface-2); }
 .keypad button.ghost { border-color: transparent; background: none; font-size: 1rem; color: var(--muted); }
@@ -55,7 +55,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand img { border-radius: 9px; }
 .brand-name { font-weight: 700; }
 .brand-version { font: 10px ui-monospace, monospace; color: var(--muted); }
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .profile-switcher { max-width: 130px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
   background: var(--surface); }
 .sync-pill { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
@@ -90,6 +90,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .flag-H { background: rgba(248, 113, 113, .15); color: var(--high); }
 .empty { text-align: center; padding: 40px 16px; color: var(--muted); }
 .empty .btn { margin-top: 12px; }
+.steps { margin: 0; padding-left: 20px; }
+.mt { margin-top: 12px; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -99,6 +101,12 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
   z-index: 200; max-width: 90vw; padding: 10px 16px; border-radius: 10px; background: var(--surface-2);
   border: 1px solid var(--border); opacity: 0; pointer-events: none; transition: opacity .2s; }
 .toast.show { opacity: 1; }
+
+/* phone: the header keeps the logo only, so the switcher and sync pill fit */
+@media (max-width: 480px) {
+  .brand-text { display: none; }
+  .profile-switcher { max-width: 150px; }
+}
 
 /* laptop: list + detail side by side where a view supports it */
 @media (min-width: 900px) {

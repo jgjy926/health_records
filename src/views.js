@@ -42,11 +42,11 @@ export function renderAdd(el) {
   // Phase 4: pick PDF -> extract on device -> mask -> AI enrich (paste / Workers AI) -> review -> save.
   el.innerHTML = `<h2>Add a report</h2>
     <div class="card">
-      <ol class="muted" style="margin:0;padding-left:20px">
+      <ol class="muted steps">
         <li>Pick the PDF (stays on this device)</li><li>Check the masked text</li>
         <li>Enrich with AI (copy/paste into Claude, or Workers AI)</li><li>Review every value</li><li>Save</li>
       </ol>
-      <p style="margin-top:12px"><button class="btn btn-primary" type="button" disabled>Pick PDF (Phase 4)</button></p>
+      <p class="mt"><button class="btn btn-primary" type="button" disabled>Pick PDF (Phase 4)</button></p>
     </div>`;
 }
 
